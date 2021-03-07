@@ -4,13 +4,6 @@
 #include <stdbool.h>
 #include "util.h"
 
-#define MADD(lhs, rhs, mask) ((lhs + rhs) & mask)     // addition with bit masking to simulate custom precision 
-#define MMULT(lhs,rhs,mask) ((lhs * rhs) & mask)      // multiplication with bit masking to simulate custom precision
-
-#define CMASK 0b111111                                // 6-bit bitmask for coefficient arithmetic
-#define CADD(lhs,rhs) (MADD(lhs,rhs,CMASK))           // coefficient add with masking
-#define CMULT(lhs,rhs) (MMULT(lhs,rhs,CMASK))         // coefficient multiplicate with masking
-
 
 int main()
 {
