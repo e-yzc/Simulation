@@ -23,8 +23,8 @@ int main()
 
   cmatrix a,b;
 
-  cmatrix_init(&a, 2, 2, true);
-  cmatrix_init(&b, 2, 2, true);
+  cm_init(&a, 2, 2, true);
+  cm_init(&b, 2, 2, true);
 
   for (i=0; i < a.rows; i++)
       for(j=0; j < a.cols; j++)
@@ -33,9 +33,29 @@ int main()
       for (j = 0; j < b.cols; j++)
           b.data[b.cols * i + j] = j;
 
-  cmatrix_print(&a);
-  cmatrix_print(&b);
+  cm_print(&a);
+  cm_print(&b);
   
+  cm_scale(&a, 5);
+  cm_print(&a);
+
+  for (i = 0; i < a.rows; i++)
+      for (j = 0; j < a.cols; j++)
+          a.data[a.cols * i + j] = 1+i;
+  for (i = 0; i < b.rows; i++)
+      for (j = 0; j < b.cols; j++)
+          b.data[b.cols * i + j] = 52;
+
+  cm_print(&a);
+  cm_print(&b);
+
+
+  cmatrix c;
+  c = cm_mult(&a, &b);
+  cm_print(&c);
+
+  cm_imult(&a, &b);
+  cm_print(&a);
 
   return 0;
 }
