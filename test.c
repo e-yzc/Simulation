@@ -41,10 +41,10 @@ int main()
 
   for (i = 0; i < a.rows; i++)
       for (j = 0; j < a.cols; j++)
-          a.data[a.cols * i + j] = 1+i;
+          a.data[a.cols * i + j] = i+j;
   for (i = 0; i < b.rows; i++)
       for (j = 0; j < b.cols; j++)
-          b.data[b.cols * i + j] = 52;
+          b.data[b.cols * i + j] = 24 * (i + j);
 
   cm_print(&a);
   cm_print(&b);
@@ -57,5 +57,33 @@ int main()
   cm_imult(&a, &b);
   cm_print(&a);
 
+  cmatrix d,e;
+  cm_init(&d, 1, 5, true);
+  cm_init(&e, 5, 1, true);
+
+  for (i = 0; i < d.rows; i++)
+      for (j = 0; j < d.cols; j++)
+          d.data[i * d.cols + j] = j+1;
+  for (i = 0; i < e.rows; i++)
+      for (j = 0; j < e.cols; j++)
+          e.data[i * e.cols + j] = i + 1;
+
+
+  cm_print(&d);
+  cm_print(&e);
+
+  cm_imult(&d, &e);
+
+  cm_print(&d);
+
+
+
+
+  cm_destroy(&a);
+  cm_destroy(&b);
+  cm_destroy(&c);
+  cm_destroy(&d);
+  cm_destroy(&e);
+  
   return 0;
 }
