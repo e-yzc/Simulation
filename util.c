@@ -7,6 +7,7 @@
 
 #include "util.h"
 #include <assert.h>
+#include <time.h>
 
 void cm_init(cmatrix* p, size_t rows, size_t cols) {
 	p->rows = rows;
@@ -94,7 +95,7 @@ void cm_scale(cmatrix* p, coef scale) {
 	}
 }
 
-void cm_iadds(cmatrix* p, coef scalar) {
+void cm_iadd_scalar(cmatrix* p, coef scalar) {
 	unsigned i, j;
 	for (i = 0; i < p->rows; i++) {
 		for (j = 0; j < p->cols; j++)
@@ -160,4 +161,61 @@ cmatrix cm_mult(cmatrix* lhs, cmatrix* rhs) {
 		}
 	}
 	return temp;
+}
+
+// Returns a random number between lower_lim and upper_lim ( both inclusive)
+// Seed must be set by srand() beforehand.
+int rand_number(lower_lim, upper_lim) {
+	assert(lower_lim < upper_lim);
+	return lower_lim + rand() % (upper_lim + 1 - lower_lim);
+}
+
+// Returns a random coefficient between lower_lim and upper_lim ( both inclusive)
+// Seed must be set by srand() beforehand.
+coef rand_coef(coef lower_lim, coef upper_lim) {
+	assert(lower_lim < upper_lim);
+	assert(lower_lim >= MIN_COEF && upper_lim <= MAX_COEF);
+	return rand_number(lower_lim, upper_lim);
+}
+
+
+void cm_fillrand(cmatrix* p, coef lower_lim, coef upper_lim) {
+	assert(lower_lim < upper_lim);
+
+	unsigned i, j;
+
+	// set the seed
+	srand((unsigned)time(NULL));
+
+	// populate with random number
+	for (i = 0; i < p->rows; i++)
+		for (j = 0; j < p->cols; j++)
+			(p->data)[i * p->cols + j] = rand_coef(lower_lim, upper_lim);
+}
+
+void cm_fillsprand(cmatrix* p, coef lower_lim, coef upper_lim, double density) {
+
+	assert(lower_lim < upper_lim);
+
+	// set the seed
+	srand((unsigned)time(NULL));
+
+	// number of non-zero elements
+	size_t nb_nonzeros;
+	nb_nonzeros = (size_t)( density * p->rows * p->cols * 2 + 1) / 2;
+
+	// fill the matrix
+	size_t i, j;
+	for (; nb_nonzeros > 0; nb_nonzeros--) {
+		// choose a random element that's not already non-zero
+		do {
+			i = rand_number(0, p->rows - 1);
+			j = rand_number(0, p->cols - 1);
+		} while (p->data[i*p->cols + j] != 0);
+
+		// to ensure the element is always non-zero regardless of upper and lower lim
+		while (p->data[i * p->cols + j] == 0) {
+			p->data[i * p->cols + j] = rand_coef(lower_lim, upper_lim);
+		}
+	}
 }

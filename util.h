@@ -18,6 +18,8 @@
 #define CADD(lhs,rhs) (MADD(lhs,rhs,CMASK))           // coefficient add with masking
 #define CMULT(lhs,rhs) (MMULT(lhs,rhs,CMASK))         // coefficient multiplicate with masking
 
+#define MAX_COEF CMASK
+#define MIN_COEF 0
 
 typedef uint16_t coef;
 typedef struct cmatrix
@@ -62,7 +64,7 @@ void cm_copy_to(cmatrix* original, cmatrix* target);
 void cm_scale(cmatrix* p, coef scale);
 
 // Add a scalar to each element of a cmatrix.
-void cm_iadds(cmatrix* p, coef scalar);
+void cm_iadd_scalar(cmatrix* p, coef scalar);
 
 // Add the contents of two cmatrix and store the result in the first one.
 void cm_iadd(cmatrix* lhs, cmatrix* rhs);
@@ -72,5 +74,14 @@ void cm_imult(cmatrix* lhs, cmatrix* rhs);
 
 // Multiply two coefficient matrixes and return the resulting matrix.
 cmatrix cm_mult(cmatrix* lhs, cmatrix* rhs);
+
+// Fill a cmatrix with random values normally-distributed in the interval [lower,upper].
+// Seed is generated from system clock
+void cm_fillrand(cmatrix* p, coef lower_lim, coef upper_lim);
+
+// Fill sparsely a cmatrix with random values normally-distributed in the interval [lower,upper].
+// Number of non-zero elements is approximately equal to density * p->rows * p->cols
+// Seed is generated from system clock
+void cm_fillsprand(cmatrix* p, coef lower_lim, coef upper_lim, double density);
 
 #endif
