@@ -139,9 +139,12 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="fpmatrix.h" />
     <ClInclude Include="util.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="fpmatrix.c" />
+    <ClCompile Include="rc01.c" />
     <ClCompile Include="test.c" />
     <ClCompile Include="util.c" />
   </ItemGroup>

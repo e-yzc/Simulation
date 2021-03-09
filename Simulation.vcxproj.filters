@@ -18,12 +18,21 @@
     <ClInclude Include="util.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="fpmatrix.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="test.c">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="util.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="rc01.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="fpmatrix.c">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

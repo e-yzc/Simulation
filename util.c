@@ -7,157 +7,85 @@
 
 #include "util.h"
 #include <assert.h>
+#include <time.h>
+#include <math.h>
 
-void cm_init(cmatrix* p, size_t rows, size_t cols) {
-	p->rows = rows;
-	p->cols = cols;
-	p->data = malloc(sizeof(coef) * rows * cols);
 
-	if (p->data == NULL) return;	// in case allocation fails
-
-	unsigned i, j;
-	for (i = 0; i < rows; i++)
-		for (j = 0; j < cols; j++)
-			(p->data)[i * cols + j] = 0;
-
-}
-
-void cm_init_ones(cmatrix* p, size_t rows, size_t cols) {
-	p->rows = rows;
-	p->cols = cols;
-	p->data = malloc(sizeof(coef) * rows * cols);
-
-	if (p->data == NULL) return;	// in case allocation fails
-
-	unsigned i, j;
-	for (i = 0; i < rows; i++)
-		for (j = 0; j < cols; j++)
-			(p->data)[i * cols + j] = 1;
-}
-
-void cm_destroy(cmatrix* p) {
-	free(p->data);
-}
-
-void cm_print(cmatrix* p) {
-	int i, j;
-	for (i = 0; i < p->rows; i++) {
-		printf("\n");
-		for (j = 0; j < p->cols; j++)
-			printf("%d\t", p->data[i * (p->cols) + j]);
-	}
-	printf("\n");
-}
-
-cmatrix cm_copy(cmatrix* p) {
-	cmatrix result;
-	cm_init(&result, p->rows, p->cols);
-
-	unsigned i, j;
-	for (i = 0; i < p->rows; i++)
-		for (j = 0; j < p->cols; j++)
-			result.data[i * result.cols + j] = p->data[i * p->cols + j];
-
-	return result;
+double fixed_to_float(fixed_point input)
+{
+#if SIGN_BIT == 1
+	int sign = (1 << (INTEGER_BITS + FRACTIONAL_BITS) & input);
+	if (sign) input = input ^ (1 << (INTEGER_BITS + FRACTIONAL_BITS));
+	return (sign ? -1 : 1) * ((double)input / (double)(1 << FRACTIONAL_BITS));
+#else
+	return ((double)input / (double)(1 << FRACTIONAL_BITS));
+#endif
 }
 
 
-cmatrix cm_transposed(cmatrix* p) {
-	cmatrix result;
-	cm_init(&result, p->cols, p->rows);
-
-	unsigned i, j;
-	for (i = 0; i < p->rows; i++)
-		for (j = 0; j < p->cols; j++)
-			result.data[j * result.cols + i] = p->data[i * p->cols + j];
-
-	return result;
+fixed_point float_to_fixed(double input)
+{
+#if SIGN_BIT == 1
+	int sign = input < 0;
+	if (sign) input = -input;
+	return (sign ? 1 << (INTEGER_BITS + FRACTIONAL_BITS) : 0) | (fixed_point)(round(input * (1 << FRACTIONAL_BITS)));
+#else
+	return (fixed_point)(round(input * (1 << FRACTIONAL_BITS)));
+#endif
 }
 
 
-void cm_copy_to(cmatrix* original, cmatrix* target) {
-	assert(original->rows == target->rows && original->cols == target->cols);
+fixed_point fp_add(fixed_point lhs, fixed_point rhs) {
+	return float_to_fixed(fixed_to_float(lhs) + fixed_to_float(rhs));
+}
 
-	unsigned i, j;
-	for (i = 0; i < original->rows; i++)
-		for (j = 0; j < original->cols; j++)
-			target->data[i * target->cols + j] = original->data[i * original->cols + j];
+fixed_point fp_mult(fixed_point lhs, fixed_point rhs) {
+	return float_to_fixed(fixed_to_float(lhs) * fixed_to_float(rhs));
+}
+
+// Returns a random number between lower_lim and upper_lim ( both inclusive)
+// Seed must be set by srand() beforehand.
+int rand_number(lower_lim, upper_lim) {
+	assert(lower_lim < upper_lim);
+	return lower_lim + rand() % (upper_lim + 1 - lower_lim);
+}
+
+// Returns a random fixed point between lower_lim and upper_lim ( both inclusive)
+// Seed must be set by srand() beforehand.
+fixed_point rand_coef(fixed_point lower_lim, fixed_point upper_lim) {
+	assert(lower_lim < upper_lim);
+	return rand_number(lower_lim, upper_lim);
 }
 
 
-// Multiply a coefficient matrix with a scalar.
-void cm_scale(cmatrix* p, coef scale) {
-	unsigned i, j;
-	for (i = 0; i < p->rows; i++) {
-		for (j = 0; j < p->cols; j++)
-			p->data[i * p->cols + j] = CMULT(p->data[i * p->cols + j], scale);
-	}
-}
 
-void cm_iadds(cmatrix* p, coef scalar) {
-	unsigned i, j;
-	for (i = 0; i < p->rows; i++) {
-		for (j = 0; j < p->cols; j++)
-			p->data[i * p->cols + j] = CADD(p->data[i * p->cols + j], scalar);
-	}
-}
 
-void cm_iadd(cmatrix* lhs, cmatrix* rhs) {
-	assert(lhs->cols == rhs->cols && lhs->rows == rhs->rows);
+/*
+ * Normal random numbers generator - Marsaglia algorithm.
+ * 
+ * Taken from https://rosettacode.org/wiki/Statistics/Normal_distribution
+ */
+double* generate_normal(int n)
+{
+	int i;
+	int m = n + n % 2;
+	double* values = (double*)calloc(m, sizeof(double));
+	//double average, deviation;
 
-	unsigned i, j;
-	for (i = 0; i < lhs->rows; i++)
-		for (j = 0; j < lhs->cols; j++)
-			lhs->data[i * lhs->cols + j] = CADD(lhs->data[i * lhs->cols + j], rhs->data[i * rhs->cols + j]);
-}
-
-// Multiply two coefficient matrixes and store the result in the left hand side matrix.
-void cm_imult(cmatrix* lhs, cmatrix* rhs) {
-	assert(lhs->cols == rhs->rows);
-
-	unsigned i, j, k;
-	coef a, b;
-
-	// initialize a temporary matrix to store the intermediate results
-	cmatrix temp;
-	cm_init(&temp, lhs->rows, rhs->cols, true);
-
-	for (i = 0; i < lhs->rows; i++) {
-		for (j = 0; j < rhs->cols; j++) {
-			for (k = 0; k < lhs->cols; k++) {
-				a = lhs->data[i * lhs->cols + k];
-				b = rhs->data[k * rhs->cols + j];
-				temp.data[i * temp.cols + j] = CADD(temp.data[i * temp.cols + j], CMULT(a, b));
-			}
+	if (values)
+	{
+		for (i = 0; i < m; i += 2)
+		{
+			double x, y, rsq, f;
+			do {
+				x = 2.0 * rand() / (double)RAND_MAX - 1.0;
+				y = 2.0 * rand() / (double)RAND_MAX - 1.0;
+				rsq = x * x + y * y;
+			} while (rsq >= 1. || rsq == 0.);
+			f = sqrt(-2.0 * log(rsq) / rsq);
+			values[i] = x * f;
+			values[i + 1] = y * f;
 		}
 	}
-
-	// swap the temp matrix with the lhs
-	coef* p = lhs->data;
-	lhs->data = temp.data;
-	temp.data = p;
-	lhs->cols = temp.cols;
-	lhs->rows = temp.rows;
-
-	// free the old matrix data
-	cm_destroy(&temp);
-}
-
-// Multiply two coefficient matrixes and return the resulting matrix.
-cmatrix cm_mult(cmatrix* lhs, cmatrix* rhs) {
-	int i, j, k;
-	coef a, b;
-	cmatrix temp;
-	cm_init(&temp, lhs->rows, rhs->cols, true);
-
-	for (i = 0; i < lhs->rows; i++) {
-		for (j = 0; j < rhs->cols; j++) {
-			for (k = 0; k < lhs->cols; k++) {
-				a = lhs->data[i * lhs->cols + k];
-				b = rhs->data[k * rhs->cols + j];
-				temp.data[i * temp.cols + j] = CADD(temp.data[i * temp.cols + j], CMULT(a, b));
-			}
-		}
-	}
-	return temp;
+	return values;
 }
