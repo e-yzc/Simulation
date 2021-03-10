@@ -63,15 +63,23 @@ void fpm_imult(fp_matrix* lhs, fp_matrix* rhs);
 // Multiply two coefficient matrixes and return the resulting matrix.
 fp_matrix fpm_mult(fp_matrix* lhs, fp_matrix* rhs);
 
-// Fill a fixed point with random values normally-distributed in the interval [lower,upper].
+// Fill a fixed point with random values uniformly-distributed in the interval [lower,upper].
 // Seed is generated from system clock
 void fpm_fillrand(fp_matrix* p, fixed_point lower_lim, fixed_point upper_lim);
 
-// Fill sparsely a fixed point with random values normally-distributed in the interval [lower,upper].
+// Fill a fixed point with normally-distributed random values.
+// Seed is generated from system clock
+void fpm_fillrandn(fp_matrix* p, double mean, double stdev);
+
+// Fill sparsely a fixed point with random values uniformly-distributed in the interval [lower,upper].
 // Number of non-zero elements is approximately equal to density * p->rows * p->cols
 // Seed is generated from system clock
 void fpm_fillsprand(fp_matrix* p, fixed_point lower_lim, fixed_point upper_lim, double density);
 
+// Fill sparsely a fixed point with normally distributed random values
+// Number of non-zero elements is approximately equal to density * p->rows * p->cols
+// Seed is generated from system clock
+void fpm_fillsprandn(fp_matrix* p, double mean, double stdev, double density);
 
 
 #endif

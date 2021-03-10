@@ -22,7 +22,7 @@
 #define MIN_COEF 0
 
 
-#define FRACTIONAL_BITS 0
+#define FRACTIONAL_BITS 5
 #define INTEGER_BITS 6
 #define SIGN_BIT 1
 
@@ -40,8 +40,20 @@ fixed_point fp_add(fixed_point lhs, fixed_point rhs);
 // Multiply two fixed point numbers
 fixed_point fp_mult(fixed_point lhs, fixed_point rhs);
 
-// Generates a normal distribution set with n elements with mean = 0 std = 1
+fixed_point rand_fp(fixed_point, fixed_point);
+
+// Generates a normal distribution set with n elements with mean = 0 stdev = 1
 double* generate_normal(int n);
 
+// Generates a normal distribution set with n elements in fixed point format 
+fixed_point* fp_generate_normal(int n, double mean, double stdev);
+
+double mean(double* values, int n);
+
+double stddev(double* values, int n);
+
+fixed_point fp_mean(fixed_point* values, int n);
+
+fixed_point fp_stddev(fixed_point* values, int n);
 
 #endif
