@@ -22,10 +22,13 @@ void fpm_init_ones(fp_matrix* p, size_t rows, size_t cols) {
 
 	if (p->data == NULL) return;	// in case allocation fails
 
+	fixed_point fp_one = float_to_fixed(1.0);
+	printf("fp_one = %x = %d\n", fp_one, fixed_to_float(fp_one));
+
 	unsigned i, j;
 	for (i = 0; i < rows; i++)
 		for (j = 0; j < cols; j++)
-			(p->data)[i * cols + j] = 1;
+			(p->data)[i * cols + j] = fp_one;
 }
 
 void fpm_destroy(fp_matrix* p) {
@@ -36,8 +39,9 @@ void fpm_print(fp_matrix* p) {
 	int i, j;
 	for (i = 0; i < p->rows; i++) {
 		printf("\n");
-		for (j = 0; j < p->cols; j++)
-			printf("%d\t", p->data[i * (p->cols) + j]);
+		for (j = 0; j < p->cols; j++) {
+			printf("%.4f\t", fixed_to_float(p->data[i * (p->cols) + j]));
+		}
 	}
 	printf("\n");
 }
@@ -141,7 +145,7 @@ fp_matrix fpm_mult(fp_matrix* lhs, fp_matrix* rhs) {
 	int i, j, k;
 	fixed_point a, b;
 	fp_matrix temp;
-	fpm_init(&temp, lhs->rows, rhs->cols, true);
+	fpm_init(&temp, lhs->rows, rhs->cols);
 
 	for (i = 0; i < lhs->rows; i++) {
 		for (j = 0; j < rhs->cols; j++) {
@@ -168,7 +172,32 @@ void fpm_fillrand(fp_matrix* p, fixed_point lower_lim, fixed_point upper_lim) {
 	// populate with random number
 	for (i = 0; i < p->rows; i++)
 		for (j = 0; j < p->cols; j++)
-			(p->data)[i * p->cols + j] = rand_coef(lower_lim, upper_lim);
+			(p->data)[i * p->cols + j] = rand_fp(lower_lim, upper_lim);
+}
+
+
+
+void fpm_fillrandn(fp_matrix* p, double mean, double stdev) {
+
+	unsigned i, j;
+	unsigned nb_vals;
+
+	fixed_point* normal_set;
+
+	// set the seed
+	srand((unsigned)time(NULL));
+
+	// generate normal set
+	nb_vals = p->rows * p->cols;
+	normal_set = fp_generate_normal(nb_vals, mean, stdev);
+
+	// populate the matrix
+	for (i = 0; i < p->rows; i++)
+		for (j = 0; j < p->cols; j++)
+			(p->data)[i * p->cols + j] = normal_set[i * p->cols + j];
+
+
+	free(normal_set);
 }
 
 void fpm_fillsprand(fp_matrix* p, fixed_point lower_lim, fixed_point upper_lim, double density) {
@@ -193,8 +222,40 @@ void fpm_fillsprand(fp_matrix* p, fixed_point lower_lim, fixed_point upper_lim, 
 
 		// to ensure the element is always non-zero regardless of upper and lower lim
 		while (p->data[i * p->cols + j] == 0) {
-			p->data[i * p->cols + j] = rand_coef(lower_lim, upper_lim);
+			p->data[i * p->cols + j] = rand_fp(lower_lim, upper_lim);
 		}
 	}
+}
+
+void fpm_fillsprandn(fp_matrix* p, double mean, double stdev, double density) {
+
+	size_t nb_nonzeros;
+	size_t nb_vals;
+	size_t i, j;
+
+	fixed_point* normal_set;
+
+	// set the seed
+	srand((unsigned)time(NULL));
+
+	// number of non-zero elements
+	nb_nonzeros = (size_t)(density * p->rows * p->cols * 2 + 1) / 2;
+
+	normal_set = fp_generate_normal(nb_nonzeros, mean, stdev);
+
+	// fill the matrix
+	for (; nb_nonzeros > 0; nb_nonzeros--) {
+		// choose a random element that's not already non-zero
+		do {
+			i = rand_number(0, p->rows - 1);
+			j = rand_number(0, p->cols - 1);
+		} while (p->data[i * p->cols + j] != 0);
+
+		while (p->data[i * p->cols + j] == 0) {
+			p->data[i * p->cols + j] = normal_set[nb_nonzeros - 1];
+		}
+	}
+
+	free(normal_set);
 }
 

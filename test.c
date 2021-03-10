@@ -19,8 +19,8 @@ int main()
   printf("\n***** fixed point artihmetic test *****\n");
 
   fixed_point x, y;
-  double dbl = -3.5;
-  x = 0b100001110000;
+  double dbl = 3.5;
+  x = 0b000001110000;
   printf("%x -> %f\n",x,fixed_to_float(x));
   printf("%f -> %x\n", dbl, float_to_fixed(dbl));
 
@@ -56,12 +56,15 @@ int main()
   printf("\n\n***** Elementary operations test *****\n");
 
   // Give initial values to A and B
-  for (i=0; i < a.rows; i++)
-      for(j=0; j < a.cols; j++)
-        a.data[a.cols*i + j] = i + j + 1;
+  for (i = 0; i < a.rows; i++)
+      for (j = 0; j < a.cols; j++)
+      {
+          a.data[a.cols * i + j] = float_to_fixed(1. + i + j);
+          printf("val = %x = %f", a.data[a.cols * i + j], fixed_to_float(a.data[a.cols * i + j]));
+      }
   for (i = 0; i < b.rows; i++)
       for (j = 0; j < b.cols; j++)
-          b.data[b.cols * i + j] = i + j;
+          b.data[b.cols * i + j] = float_to_fixed(0. + i + j);
 
   printf("\nMatrix A:\n");
   fpm_print(&a);
@@ -69,7 +72,7 @@ int main()
   fpm_print(&b);
   
   printf("\nScale A by 5:\n");
-  fpm_scale(&a, 5);
+  fpm_scale(&a, float_to_fixed(5));
   fpm_print(&a);
 
   printf("\nAdd 5 to each elemnt of B:\n");
@@ -83,7 +86,7 @@ int main()
 
   fp_matrix c;
   fpm_init_ones(&c, 2, 1);
-  c.data[1] = 2;
+  c.data[1] = float_to_fixed(2);
   printf("\nMatrix C:\n");
   fpm_print(&c);
 
@@ -113,6 +116,7 @@ int main()
   fpm_print(&randcm);
   fpm_destroy(&randcm);
 
+
   fp_matrix sprandcm;
   double density;
   density = 0.1;
@@ -130,6 +134,36 @@ int main()
   printf("Number of non-zero elements: %d\n", nb_nz);
   fpm_destroy(&sprandcm);
 
+
+  fp_matrix randncm;
+  double mean, stdev;
+  density = 0.1;
+  mean = 10;
+  stdev = 2;
+  fpm_init(&randncm, rows, cols);
+  printf("\n%d by %d matrix filled sparsely by normally distributed random numbers\n", rows, cols);
+  printf("Density: %f\n", density);
+  printf("Mean: %f\n", mean);
+  printf("Stdev: %f\n", stdev);
+  fpm_fillrandn(&randncm, mean, stdev, density);
+  fpm_print(&randncm);
+
+
+  fpm_destroy(&randncm);
+
+
+  fp_matrix sprandncm;
+  density = 0.1;
+  mean = 10;
+  stdev = 2;
+  fpm_init(&sprandncm, rows, cols);
+  printf("\n%d by %d matrix filled sparsely by normally distributed random numbers\n", rows, cols);
+  printf("Density: %f\n", density);
+  printf("Mean: %f\n", mean);
+  printf("Stdev: %f\n", stdev);
+  fpm_fillsprandn(&sprandncm, mean, stdev, density);
+  fpm_print(&sprandncm);
+  fpm_destroy(&sprandncm);
 
   // free resources
   fpm_destroy(&a);
