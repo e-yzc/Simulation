@@ -134,7 +134,6 @@ int main()
   printf("Number of non-zero elements: %d\n", nb_nz);
   fpm_destroy(&sprandcm);
 
-
   fp_matrix randncm;
   double mean, stdev;
   density = 0.1;
@@ -143,16 +142,18 @@ int main()
   fpm_init(&randncm, rows, cols);
   printf("\n%d by %d matrix filled sparsely by normally distributed random numbers\n", rows, cols);
   printf("Density: %f\n", density);
-  printf("Mean: %f\n", mean);
-  printf("Stdev: %f\n", stdev);
+  printf("Expected mean: %f\n", mean);
+  printf("Expected stddev: %f\n", stdev);
   fpm_fillrandn(&randncm, mean, stdev, density);
   fpm_print(&randncm);
 
+  printf("Mean: %f\n", fixed_to_float(fp_mean(randncm.data, rows*cols)));
+  printf("Stddev: %f\n", fixed_to_float(fp_stddev(randncm.data, rows*cols)));
 
   fpm_destroy(&randncm);
 
 
-  fp_matrix sprandncm;
+  fp_matrix sprandncm; 
   density = 0.1;
   mean = 10;
   stdev = 2;

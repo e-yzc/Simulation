@@ -48,4 +48,12 @@ double* generate_normal(int n);
 // Generates a normal distribution set with n elements in fixed point format 
 fixed_point* fp_generate_normal(int n, double mean, double stdev);
 
+double mean(double* values, int n);
+
+double stddev(double* values, int n);
+
+fixed_point fp_mean(fixed_point* values, int n);
+
+fixed_point fp_stddev(fixed_point* values, int n);
+
 #endif
