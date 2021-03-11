@@ -17,6 +17,7 @@
  ********************************************/
 
 #include "fpmatrix.h"
+#define _USE_MATH_DEFINES 
 #include <math.h>
 
 
@@ -25,7 +26,7 @@ int main() {
 	// loop variables
 	unsigned i, j, k;
 
-	fp_matrix M, wo, dw, wf, wi;
+	fp_matrix M, wo, dw, wf, wi, ft, ft2, wo_len, zt, zpt, x0, z0, x, r, z;
 
 	unsigned N, nsecs, learn_every;
 	double p, g, alpha, dt;
@@ -86,8 +87,50 @@ int main() {
 		simtime2[i] = nsecs + i * dt;
 	}
 
+	double amp, freq;
+	amp = 1.3;
+	freq = 1 / 60;
+
+	fpm_init(&ft, simtime_len, 1);
+	fpm_init(&ft2, simtime_len, 1);
+
+	for (i = 0; i < simtime_len; i++)
+		ft.data[i] = float_to_fixed( ((amp / 1.0) * sin(1.0 * M_PI * freq * simtime[i]) + 
+		(amp / 2.0) * sin(2.0 * M_PI * freq * simtime[i]) + 
+		(amp / 6.0) * sin(3.0 * M_PI * freq * simtime[i]) + 
+		(amp / 3.0) * sin(4.0 * M_PI * freq * simtime[i])) / 1.5 );
+
+	for (i = 0; i < simtime_len; i++)
+		ft2.data[i] = float_to_fixed(((amp / 1.0) * sin(1.0 * M_PI * freq * simtime[i]) +
+			(amp / 2.0) * sin(2.0 * M_PI * freq * simtime[i]) +
+			(amp / 6.0) * sin(3.0 * M_PI * freq * simtime[i]) +
+			(amp / 3.0) * sin(4.0 * M_PI * freq * simtime[i])) / 1.5);
+
+	fpm_init(&wo_len, 1, simtime_len);
+	fpm_init(&zt, 1, simtime_len);
+	fpm_init(&zpt, 1, simtime_len);
+	
+	fpm_init(&x0, N, 1);
+	fpm_fillrandn(&x0, 0, 1);
+	fpm_scale(&x0, float_to_fixed(0.5));
+	fpm_init(&z0, 1, 1);
+	fpm_fillrandn(&z0, 0, 1);
+	fpm_scale(&z0, float_to_fixed(0.5));
+
+	x = fpm_copy(&x0);
+	fpm_init(&r, x.rows, x.cols);
+	for (i = 0; i < r.rows * r.cols; i++)
+		r.data[i] = float_to_fixed(fixed_to_float(tanh(x.data[i])));
+	z = fpm_copy(&z0);
 
 
+
+
+	fpm_destroy(&M);
+	fpm_destroy(&wo);
+	fpm_destroy(&dw);
+	fpm_destroy(&wf);
+	fpm_destroy(&wi);
 	free(simtime);
 	free(simtime2);
 }
