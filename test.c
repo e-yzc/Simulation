@@ -11,7 +11,7 @@
 #include "fpmatrix.h"
 
 
-int main()
+int mains()
 {
   int i, j;
   

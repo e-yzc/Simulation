@@ -36,7 +36,7 @@ fixed_point float_to_fixed(double input)
 
 
 fixed_point fp_add(fixed_point lhs, fixed_point rhs) {
-	return float_to_fixed(fixed_to_float(lhs) + fixed_to_float(rhs));
+	return lhs + rhs;
 }
 
 fixed_point fp_mult(fixed_point lhs, fixed_point rhs) {

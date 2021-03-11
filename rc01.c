@@ -20,7 +20,7 @@
 #include <math.h>
 
 
-int mains() {
+int main() {
 
 	fp_matrix M;
 
@@ -37,11 +37,10 @@ int mains() {
 
 	double scale;
 	scale = 1.0 / sqrt(p * N);
-	
+
 	// 	M = sprandn(N, N, p) * g * scale;% sparse random connectivity
 	fpm_init(&M, N, N);
-	fpm_fillsprand(&M, MIN_COEF, MAX_COEF, p);
-	fpm_scale(&M, g * scale);
-
+	fpm_fillsprandn(&M, 0, 1, p);
+	fpm_scale(&M, float_to_fixed(g * scale));
 
 }

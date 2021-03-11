@@ -249,13 +249,10 @@ void fpm_fillsprandn(fp_matrix* p, double mean, double stdev, double density) {
 		do {
 			i = rand_number(0, p->rows - 1);
 			j = rand_number(0, p->cols - 1);
-		} while (p->data[i * p->cols + j] != 0);
+		} while(p->data[i * p->cols + j] != 0);
 
-		while (p->data[i * p->cols + j] == 0) {
-			p->data[i * p->cols + j] = normal_set[nb_nonzeros - 1];
-		}
+		p->data[i * p->cols + j] = normal_set[nb_nonzeros - 1];
 	}
-
 	free(normal_set);
 }
 
