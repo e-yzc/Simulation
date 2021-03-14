@@ -32,6 +32,7 @@ void fpm_init_ones(fp_matrix* p, size_t rows, size_t cols) {
 }
 
 void fpm_destroy(fp_matrix* p) {
+	if (p->data == NULL) return;
 	free(p->data);
 }
 

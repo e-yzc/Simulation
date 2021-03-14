@@ -22,11 +22,11 @@
 #define MIN_COEF 0
 
 
-#define FRACTIONAL_BITS 5
+#define FRACTIONAL_BITS 24
 #define INTEGER_BITS 6
 #define SIGN_BIT 1
 
-typedef uint16_t fixed_point;
+typedef uint32_t fixed_point;
 
  /// Converts fp -> double
 double fixed_to_float(fixed_point input);

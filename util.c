@@ -58,8 +58,6 @@ fixed_point rand_fp(fixed_point lower_lim, fixed_point upper_lim) {
 }
 
 
-
-
 /*
  * Normal random numbers generator - Marsaglia algorithm.
  *
