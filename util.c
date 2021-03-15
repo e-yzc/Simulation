@@ -8,53 +8,71 @@
 #include "util.h"
 #include <assert.h>
 #include <time.h>
-#include <math.h>
+#include <stdlib.h>
 
 
-double fixed_to_float(fixed_point input)
-{
-#if SIGN_BIT == 1
-	int sign = (1 << (INTEGER_BITS + FRACTIONAL_BITS) & input);
-	if (sign) input = input ^ (1 << (INTEGER_BITS + FRACTIONAL_BITS));
-	return (sign ? -1 : 1) * ((double)input / (double)(1 << FRACTIONAL_BITS));
-#else
-	return ((double)input / (double)(1 << FRACTIONAL_BITS));
-#endif
+//inline double fixed_to_float(fixed_point input)
+//{
+//#if SIGN_BIT == 1
+//	int sign = (1 << (INTEGER_BITS + FRACTIONAL_BITS) & input);
+//	if (sign) input = input ^ (1 << (INTEGER_BITS + FRACTIONAL_BITS));
+//	return (sign ? -1 : 1) * ((double)input / (double)(1 << FRACTIONAL_BITS));
+//#else
+//	return ((double)input / (double)(1 << FRACTIONAL_BITS));
+//#endif
+//}
+//
+//
+//inline fixed_point float_to_fixed(double input)
+//{
+//#if SIGN_BIT == 1
+//	int sign = input < 0;
+//	if (sign) input = -input;
+//	return (sign ? 1 << (INTEGER_BITS + FRACTIONAL_BITS) : 0) | (fixed_point)(round(input * (double)(1 << FRACTIONAL_BITS)));
+//#else
+//	return (fixed_point)(round(input * (1 << FRACTIONAL_BITS)));
+//#endif
+//}
+//
+//
+//inline fixed_point fp_add(fixed_point lhs, fixed_point rhs) {
+//	return lhs + rhs;
+//}
+//
+//inline fixed_point fp_mult(fixed_point lhs, fixed_point rhs) {
+//	return float_to_fixed(fixed_to_float(lhs) * fixed_to_float(rhs));
+//}
+
+/* return a uniform random value in the range 0..n-1 inclusive 
+* taken from https://www.cs.yale.edu/homes/aspnes/pinewiki/C(2f)Randomization.html
+*/
+int rand_number16(int n) {
+	assert(n > 2);
+
+	int limit;
+	int r;
+	
+	limit = RAND_MAX - (RAND_MAX % n);
+
+	while ((r = rand()) >= limit);
+
+	return r % n;
 }
 
-
-fixed_point float_to_fixed(double input)
-{
-#if SIGN_BIT == 1
-	int sign = input < 0;
-	if (sign) input = -input;
-	return (sign ? 1 << (INTEGER_BITS + FRACTIONAL_BITS) : 0) | (fixed_point)(round(input * (1 << FRACTIONAL_BITS)));
-#else
-	return (fixed_point)(round(input * (1 << FRACTIONAL_BITS)));
-#endif
-}
-
-
-fixed_point fp_add(fixed_point lhs, fixed_point rhs) {
-	return lhs + rhs;
-}
-
-fixed_point fp_mult(fixed_point lhs, fixed_point rhs) {
-	return float_to_fixed(fixed_to_float(lhs) * fixed_to_float(rhs));
-}
-
-// Returns a random number between lower_lim and upper_lim ( both inclusive)
-// Seed must be set by srand() beforehand.
-int rand_number(lower_lim, upper_lim) {
-	assert(lower_lim < upper_lim);
-	return lower_lim + rand() % (upper_lim + 1 - lower_lim);
+int rand_number32(int n) {
+	return (rand_number16(RAND_MAX) | (rand_number16(RAND_MAX) << 16)) % n;
 }
 
 // Returns a random fixed point between lower_lim and upper_lim ( both inclusive)
-// Seed must be set by srand() beforehand.
 fixed_point rand_fp(fixed_point lower_lim, fixed_point upper_lim) {
 	assert(lower_lim < upper_lim);
-	return rand_number(lower_lim, upper_lim);
+	static fixed_point randfp;
+
+	do {
+		randfp = rand_number32(upper_lim);
+	} while (randfp < lower_lim);
+
+	return randfp;
 }
 
 

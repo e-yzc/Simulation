@@ -23,6 +23,9 @@
 
 int main() {
 
+	// set the seed
+	srand((unsigned)time(NULL));
+
 	// Open file to store simulation results
 #pragma warning(suppress : 4996).
 	FILE* res_file = fopen("sim_results.csv", "w");
@@ -36,11 +39,11 @@ int main() {
 	unsigned N, nsecs, learn_every;
 	double p, g, alpha, dt;
 
-	N = 1000;
+	N = 100;
 	p = 0.1;
 	g = 1.5;	// g greater than 1 leads to chaotic networks.
 	alpha = 1.0;
-	nsecs = 100; //1440;
+	nsecs = 1440;
 	dt = 0.1;
 	learn_every = 2;
 
@@ -51,6 +54,7 @@ int main() {
 	fpm_init(&M, N, N);
 	fpm_fillsprandn(&M, 0, 1, p);
 	fpm_scale(&M, float_to_fixed(g * scale));
+
 
 	unsigned nRec2Out;
 	nRec2Out = N;
@@ -136,7 +140,7 @@ int main() {
 		for (j = 0; j < P.cols; j++)
 			P.data[i * P.cols + j] = float_to_fixed((i == j) ? 1. : 0.);
 	fpm_scale(&P, float_to_fixed((1.0 / alpha)));
-
+	
 	// initialize k
 	fpm_init(&k, nRec2Out, 1);
 
@@ -158,6 +162,7 @@ int main() {
 		tmp = fpm_mult(&M, &r);
 		fpm_scale(&tmp, float_to_fixed(dt));
 		fpm_iadd(&x, &tmp);
+
 		
 		fpm_destroy(&tmp);
 		tmp = fpm_copy(&wf);
@@ -167,20 +172,20 @@ int main() {
 
 		fpm_destroy(&tmp);
 		tmp = fpm_copy(&wi);
-		fpm_scale(&tmp, float_to_fixed(ft.data[t]*dt));
+		fpm_scale(&tmp, ft.data[t]);
+		fpm_scale(&tmp, float_to_fixed(dt));
 		fpm_iadd(&x, &tmp);
 
 
 		// update r
 		for (i = 0; i < r.cols * r.rows; i++)
 			r.data[i] = float_to_fixed(tanh(fixed_to_float(x.data[i])));
-		
+
 		// update z
 		fpm_destroy(&tmp);
 		tmp = fpm_transposed(&wo);
 		fpm_imult(&tmp, &r);
 		z = tmp.data[0];
-
 
 		if (t % learn_every == 0) {
 			// update inverse correlation matrix
@@ -190,6 +195,7 @@ int main() {
 			fpm_destroy(&tmp);
 			tmp = fpm_transposed(&r);	// tmp = r'
 			fpm_imult(&tmp, &k); // tmp = r'k, should be 1-by-1
+
 			rPr = tmp.data[0];
 			c = float_to_fixed(1.0 / (1.0 + fixed_to_float(rPr)));
 
@@ -197,11 +203,13 @@ int main() {
 			tmp = fpm_copy(&k); // tmp = k
 			tmp2 = fpm_transposed(&tmp); // tmp2 = k'
 			fpm_imult(&tmp, &tmp2); // tmp = k*k'
-			fpm_scale(&tmp, float_to_fixed(-1 * fixed_to_float(c))); // tmp = - k*k' * c
-			fpm_iadd(&P, &tmp);
+			fpm_scale(&tmp, float_to_fixed(-1.)); // tmp = - k*k'
+			fpm_scale(&tmp, c); // tmp = - k*k' * c
+			fpm_iadd(&P, &tmp);	// P = P - k*k'*c
+
 			fpm_destroy(&tmp2);
 			// update the error for the linear readout
-			e = z - ft.data[t];
+			e = fp_add(z, fp_mult(ft.data[t], float_to_fixed(-1.)));
 
 			// update the output weights
 			fpm_destroy(&tmp);
@@ -210,8 +218,8 @@ int main() {
 			fpm_scale(&tmp, e); // tmp = e*k*c
 			fpm_scale(&tmp, float_to_fixed(-1.)); // tmp = - e * k * c
 			fpm_destroy(&dw);
-			dw = fpm_copy(&tmp);
-			fpm_iadd(&wo, &dw);
+			dw = fpm_copy(&tmp);	// dw = - e * k * c
+			fpm_iadd(&wo, &dw);		// wo = wo + dw
 		}
 
 		// store the output
@@ -220,12 +228,14 @@ int main() {
 		fpm_imult(&tmp, &wo);	// tmp = wo'*wo
 		wo_len.data[t] = float_to_fixed(sqrt(fixed_to_float(tmp.data[0])));
 
-		//printf("%f, %f, %f\n", fixed_to_float(ft.data[t]), fixed_to_float(zt.data[t]), fixed_to_float(wo_len.data[t]));
+		//printf("%f, %f, %f, %f\n", fixed_to_float(ft.data[t]), fixed_to_float(zt.data[t]), fixed_to_float(e),fixed_to_float(wo_len.data[t]));
 
 
 		if (t % (simtime_len / 100) == 0)
 			printf(".");
 	}
+
+	//fpm_print(&wo);
 
 	// write results
 	for (i = 0; i < simtime_len; i++) {
