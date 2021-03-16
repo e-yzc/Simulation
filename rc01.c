@@ -27,7 +27,7 @@ int main() {
 	srand((unsigned)time(NULL));
 
 	// Open file to store simulation results
-#pragma warning(suppress : 4996).
+#pragma warning(suppress : 4996)
 	FILE* res_file = fopen("sim_results.csv", "w");
 	if (res_file == NULL) return -1;
 
@@ -39,11 +39,11 @@ int main() {
 	unsigned N, nsecs, learn_every;
 	double p, g, alpha, dt;
 
-	N = 100;
+	N = 400;
 	p = 0.1;
 	g = 1.5;	// g greater than 1 leads to chaotic networks.
 	alpha = 1.0;
-	nsecs = 1440;
+	nsecs = 144;
 	dt = 0.1;
 	learn_every = 2;
 
@@ -259,7 +259,6 @@ int main() {
 	fpm_destroy(&z0);
 	fpm_destroy(&x);
 	fpm_destroy(&r);
-	fpm_destroy(&z);
 	fpm_destroy(&P);
 
 	free(simtime);
