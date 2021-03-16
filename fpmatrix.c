@@ -32,6 +32,7 @@ void fpm_init_ones(fp_matrix* p, size_t rows, size_t cols) {
 }
 
 void fpm_destroy(fp_matrix* p) {
+	if (p->data == NULL) return;
 	free(p->data);
 }
 
@@ -166,13 +167,14 @@ void fpm_fillrand(fp_matrix* p, fixed_point lower_lim, fixed_point upper_lim) {
 
 	unsigned i, j;
 
-	// set the seed
-	srand((unsigned)time(NULL));
 
 	// populate with random number
 	for (i = 0; i < p->rows; i++)
-		for (j = 0; j < p->cols; j++)
-			(p->data)[i * p->cols + j] = rand_fp(lower_lim, upper_lim);
+		for (j = 0; j < p->cols; j++) {
+			fixed_point rand_nb = rand_fp(lower_lim, upper_lim);
+			(p->data)[i * p->cols + j] = rand_nb;
+		}
+	
 }
 
 
@@ -183,9 +185,6 @@ void fpm_fillrandn(fp_matrix* p, double mean, double stdev) {
 	unsigned nb_vals;
 
 	fixed_point* normal_set;
-
-	// set the seed
-	srand((unsigned)time(NULL));
 
 	// generate normal set
 	nb_vals = p->rows * p->cols;
@@ -204,9 +203,6 @@ void fpm_fillsprand(fp_matrix* p, fixed_point lower_lim, fixed_point upper_lim, 
 
 	assert(lower_lim < upper_lim);
 
-	// set the seed
-	srand((unsigned)time(NULL));
-
 	// number of non-zero elements
 	size_t nb_nonzeros;
 	nb_nonzeros = (size_t)(density * p->rows * p->cols * 2 + 1) / 2;
@@ -216,8 +212,8 @@ void fpm_fillsprand(fp_matrix* p, fixed_point lower_lim, fixed_point upper_lim, 
 	for (; nb_nonzeros > 0; nb_nonzeros--) {
 		// choose a random element that's not already non-zero
 		do {
-			i = rand_number(0, p->rows - 1);
-			j = rand_number(0, p->cols - 1);
+			i = rand_number16(p->rows - 1);
+			j = rand_number16(p->cols - 1);
 		} while (p->data[i * p->cols + j] != 0);
 
 		// to ensure the element is always non-zero regardless of upper and lower lim
@@ -235,9 +231,6 @@ void fpm_fillsprandn(fp_matrix* p, double mean, double stdev, double density) {
 
 	fixed_point* normal_set;
 
-	// set the seed
-	srand((unsigned)time(NULL));
-
 	// number of non-zero elements
 	nb_nonzeros = (size_t)(density * p->rows * p->cols * 2 + 1) / 2;
 
@@ -247,15 +240,12 @@ void fpm_fillsprandn(fp_matrix* p, double mean, double stdev, double density) {
 	for (; nb_nonzeros > 0; nb_nonzeros--) {
 		// choose a random element that's not already non-zero
 		do {
-			i = rand_number(0, p->rows - 1);
-			j = rand_number(0, p->cols - 1);
-		} while (p->data[i * p->cols + j] != 0);
+			i = rand_number16(p->rows - 1);
+			j = rand_number16(p->cols - 1);
+		} while(p->data[i * p->cols + j] != 0);
 
-		while (p->data[i * p->cols + j] == 0) {
-			p->data[i * p->cols + j] = normal_set[nb_nonzeros - 1];
-		}
+		p->data[i * p->cols + j] = normal_set[nb_nonzeros - 1];
 	}
-
 	free(normal_set);
 }
 

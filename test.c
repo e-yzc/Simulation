@@ -11,29 +11,29 @@
 #include "fpmatrix.h"
 
 
-int main()
+int mains()
 {
   int i, j;
   
   /***** Test fixed point artihmetic *****/
   printf("\n***** fixed point artihmetic test *****\n");
 
+  // test written for 4 fractional and 4 integer bits
   fixed_point x, y;
-  double dbl = 3.5;
-  x = 0b000001110000;
+  double dbl = -1;
+  x = fp_inverse(1 << FRACTIONAL_BITS);
   printf("%x -> %f\n",x,fixed_to_float(x));
   printf("%f -> %x\n", dbl, float_to_fixed(dbl));
 
-  x = 0b100001110000;
-  y = 0b000001110000;
- 
-  printf("%x + %x = %x\n",x, y, fp_add(x,y));
-  printf("Expected result: %x\n", 0);
+  y = x;
 
-  x = 0b100001110000;
-  y = 0b000001110000;
+  printf("%x + %x = %x\n",x, x, fp_add(x,y));
+  printf("Expected result: %x\n", float_to_fixed(fixed_to_float(x) + fixed_to_float(y)));
+
+  x = x << 1;
+  y = x << 2;
   printf("%x * %x = %x\n", x, y, fp_mult(x, y));
-  printf("Expected result: %x\n", float_to_fixed(-3.5*3.5));
+  printf("Expected result: %x\n", float_to_fixed(fixed_to_float(x)*fixed_to_float(y)));
 
 
 
@@ -144,7 +144,7 @@ int main()
   printf("Density: %f\n", density);
   printf("Expected mean: %f\n", mean);
   printf("Expected stddev: %f\n", stdev);
-  fpm_fillrandn(&randncm, mean, stdev, density);
+  fpm_fillrandn(&randncm, mean, stdev);
   fpm_print(&randncm);
 
   printf("Mean: %f\n", fixed_to_float(fp_mean(randncm.data, rows*cols)));
