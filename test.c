@@ -11,23 +11,22 @@
 #include "fpmatrix.h"
 
 
-int mains()
+int mainr()
 {
   int i, j;
   
   /***** Test fixed point artihmetic *****/
   printf("\n***** fixed point artihmetic test *****\n");
 
-  // test written for 4 fractional and 4 integer bits
   fixed_point x, y;
-  double dbl = -1;
-  x = fp_inverse(1 << FRACTIONAL_BITS);
-  printf("%x -> %f\n",x,fixed_to_float(x));
+  double dbl = -7.5;
+  x = 7<<FRACTIONAL_BITS;//fp_inverse(7 << FRACTIONAL_BITS);
+  printf("%x -> %f\n",(int)x,fixed_to_float(x));
   printf("%f -> %x\n", dbl, float_to_fixed(dbl));
 
-  y = x;
+  y = 5 << FRACTIONAL_BITS;
 
-  printf("%x + %x = %x\n",x, x, fp_add(x,y));
+  printf("%x + %x = %x\n",x, y, fp_add(x,y));
   printf("Expected result: %x\n", float_to_fixed(fixed_to_float(x) + fixed_to_float(y)));
 
   x = x << 1;
@@ -60,7 +59,6 @@ int mains()
       for (j = 0; j < a.cols; j++)
       {
           a.data[a.cols * i + j] = float_to_fixed(1. + i + j);
-          printf("val = %x = %f", a.data[a.cols * i + j], fixed_to_float(a.data[a.cols * i + j]));
       }
   for (i = 0; i < b.rows; i++)
       for (j = 0; j < b.cols; j++)

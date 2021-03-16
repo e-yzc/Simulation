@@ -12,8 +12,8 @@
 #include <stdint.h>
 #include <math.h>
 
-#define FRACTIONAL_BITS 22
-#define INTEGER_BITS 8
+#define FRACTIONAL_BITS 18
+#define INTEGER_BITS 6
 #define SIGN_BIT 1
 #define TOTAL_BITS (FRACTIONAL_BITS + INTEGER_BITS + SIGN_BIT)
 
@@ -24,13 +24,18 @@
 
 typedef long long fixed_point; // must have at least 2*(FRACTIONAL + INTEGER + SIGN) number of bits for multiplication to be valid
 
+// Twos complement inverse 
+inline fixed_point fp_inverse(fixed_point x) {
+	return ((x ^ FPMASK) + (fixed_point)1) & FPMASK;
+}
+
  /// Converts fp -> double
 inline double fixed_to_float(fixed_point input)
 {
 #if SIGN_BIT == 1
 	int sign = (((fixed_point)1 << (TOTAL_BITS - (fixed_point)1)) & input);
-	if (sign) input = ((input ^ FPMASK) + 1) & FPMASK;
-	return (sign ? -1 : 1) * ((double)input / (double)(1 << FRACTIONAL_BITS));
+	if (sign) input = fp_inverse(input);
+	return (sign ? -1 : 1) * (((double)input) / (double)(1 << FRACTIONAL_BITS));
 #else
 	return ((double)input / (double)(1 << FRACTIONAL_BITS));
 #endif
@@ -50,14 +55,29 @@ inline fixed_point float_to_fixed(double input)
 #endif
 }
 
-inline fixed_point fp_inverse(fixed_point x) {
-	return ((x ^ FPMASK) + (fixed_point)1) & FPMASK;
-}
-
 
 // Add two fixed point numbers
 inline fixed_point fp_add(fixed_point lhs, fixed_point rhs) {
-	return (lhs + rhs) & FPMASK;
+	// no overflow
+	int lhs_sign = ((FPMASK + 1) & lhs);
+	int rhs_sign = ((FPMASK + 1) & lhs);
+
+	fixed_point res = (lhs + rhs) & FPMASK;
+
+	//// check overflow if both are negative
+	//if (lhs_sign && rhs_sign) {
+	//	bool res_sign = ((FPMASK + 1) & res);
+	//	if (res_sign) return res;	// no overflow
+	//	else return (FPMASK >> 1) + 1; // return max negative if overflow
+	//}
+
+	//if (!(lhs_sign || rhs_sign)) {
+	//	bool res_sign = ((FPMASK + 1) & res);
+	//	if (!res_sign) return res;
+	//	else return (FPMASK >> 1);
+	//}
+
+	return res;
 	//return float_to_fixed(fixed_to_float(lhs) + fixed_to_float(rhs));
 }
 
