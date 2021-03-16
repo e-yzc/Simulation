@@ -12,8 +12,8 @@
 #include <stdint.h>
 #include <math.h>
 
-#define FRACTIONAL_BITS 12
-#define INTEGER_BITS 6
+#define FRACTIONAL_BITS 22
+#define INTEGER_BITS 8
 #define SIGN_BIT 1
 #define TOTAL_BITS (FRACTIONAL_BITS + INTEGER_BITS + SIGN_BIT)
 

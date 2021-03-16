@@ -39,11 +39,11 @@ int main() {
 	unsigned N, nsecs, learn_every;
 	double p, g, alpha, dt;
 
-	N = 400;
+	N = 1000;
 	p = 0.1;
 	g = 1.5;	// g greater than 1 leads to chaotic networks.
-	alpha = 1.0;
-	nsecs = 144;
+	alpha = 10;
+	nsecs = 1440;
 	dt = 0.1;
 	learn_every = 2;
 
@@ -195,28 +195,25 @@ int main() {
 			fpm_destroy(&tmp);
 			tmp = fpm_transposed(&r);	// tmp = r'
 			fpm_imult(&tmp, &k); // tmp = r'k, should be 1-by-1
-
 			rPr = tmp.data[0];
 			c = float_to_fixed(1.0 / (1.0 + fixed_to_float(rPr)));
 
 			fpm_destroy(&tmp);
 			tmp = fpm_copy(&k); // tmp = k
-			tmp2 = fpm_transposed(&tmp); // tmp2 = k'
+			tmp2 = fpm_transposed(&k); // tmp2 = k'
 			fpm_imult(&tmp, &tmp2); // tmp = k*k'
-			fpm_scale(&tmp, float_to_fixed(-1.)); // tmp = - k*k'
-			fpm_scale(&tmp, c); // tmp = - k*k' * c
+			fpm_scale(&tmp, fp_inverse(c)); // tmp = - k*k'*c
 			fpm_iadd(&P, &tmp);	// P = P - k*k'*c
 
 			fpm_destroy(&tmp2);
 			// update the error for the linear readout
-			e = fp_add(z, fp_mult(ft.data[t], float_to_fixed(-1.)));
+			e = fp_add(z, fp_inverse(ft.data[t]));
 
 			// update the output weights
 			fpm_destroy(&tmp);
 			tmp = fpm_copy(&k); // tmp = k
-			fpm_scale(&tmp, c+1);	// tmp = k*c
-			fpm_scale(&tmp, e); // tmp = e*k*c
-			fpm_scale(&tmp, float_to_fixed(-1.)); // tmp = - e * k * c
+			fpm_scale(&tmp, c);	// tmp = k*c
+			fpm_scale(&tmp, fp_inverse(e)); // tmp = - e*k*c
 			fpm_destroy(&dw);
 			dw = fpm_copy(&tmp);	// dw = - e * k * c
 			fpm_iadd(&wo, &dw);		// wo = wo + dw
@@ -227,15 +224,14 @@ int main() {
 		tmp = fpm_transposed(&wo);	// tmp = wo'
 		fpm_imult(&tmp, &wo);	// tmp = wo'*wo
 		wo_len.data[t] = float_to_fixed(sqrt(fixed_to_float(tmp.data[0])));
-
+		//if (t < 10)printf("rPr = %f\n", fixed_to_float(rPr));//fpm_print(&k);
 		//printf("%f, %f, %f, %f\n", fixed_to_float(ft.data[t]), fixed_to_float(zt.data[t]), fixed_to_float(e),fixed_to_float(wo_len.data[t]));
 
-
+		
 		if (t % (simtime_len / 100) == 0)
 			printf(".");
 	}
 
-	//fpm_print(&wo);
 
 	// write results
 	for (i = 0; i < simtime_len; i++) {
