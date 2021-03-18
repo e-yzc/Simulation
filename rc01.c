@@ -33,13 +33,14 @@ int main() {
 
 	// loop variables
 	unsigned i, j, t;
+	unsigned progress = 0;
 
 	fp_matrix M, wo, dw, wf, wi, ft, ft2, wo_len, zt, zpt, z0, x0, x, r, P, k;
 	fixed_point z, rPr, c, e;
 	unsigned N, nsecs, learn_every;
 	double p, g, alpha, dt;
 
-	N = 400;
+	N = 100;
 	p = 0.1;
 	g = 1.5;	// g greater than 1 leads to chaotic networks.
 	alpha = 1;
@@ -235,8 +236,12 @@ int main() {
 		//printf("%f, %f, %f, %f\n", fixed_to_float(ft.data[t]), fixed_to_float(zt.data[t]), fixed_to_float(e),fixed_to_float(wo_len.data[t]));
 
 		
-		if (t % (simtime_len / 100) == 0)
-			printf(".");
+		if (t % (simtime_len / 100) == 0) {
+			progress++;
+			printf("\r%d %% |", progress);
+			for (i = 0; i < 100; i++) printf("%c",(i < progress ? 219 : ' '));
+			printf("|");
+		}
 	}
 
 

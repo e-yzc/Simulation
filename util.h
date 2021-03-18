@@ -12,7 +12,7 @@
 #include <stdint.h>
 #include <math.h>
 
-#define FRACTIONAL_BITS 18
+#define FRACTIONAL_BITS 6
 #define INTEGER_BITS 6
 #define SIGN_BIT 1
 #define TOTAL_BITS (FRACTIONAL_BITS + INTEGER_BITS + SIGN_BIT)
