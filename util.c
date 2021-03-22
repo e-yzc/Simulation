@@ -63,6 +63,13 @@ int rand_number32(int n) {
 	return (rand_number16(RAND_MAX) | (rand_number16(RAND_MAX) << 16)) % n;
 }
 
+// generate quasi-uniform random double between lower_lim and upper_lim
+double rand_db(double lower_lim, double upper_lim) {
+	double range = (upper_lim - lower_lim);
+	double step = RAND_MAX / range;
+	return lower_lim + (rand() / step);
+}
+
 // Returns a random fixed point between lower_lim and upper_lim ( both inclusive)
 fixed_point rand_fp(fixed_point lower_lim, fixed_point upper_lim) {
 	assert(lower_lim < upper_lim);
@@ -81,7 +88,7 @@ fixed_point rand_fp(fixed_point lower_lim, fixed_point upper_lim) {
  *
  * Taken from https://rosettacode.org/wiki/Statistics/Normal_distribution
  */
-double* generate_normal(int n)
+double* generate_normal(int n, double mean, double stdev)
 {
 	int i;
 	int m = n + n % 2;
@@ -103,16 +110,20 @@ double* generate_normal(int n)
 			values[i + 1] = y * f;
 		}
 	}
+
+	for (i = 0; i < n; i++)
+		values[i] = stdev * values[i] + mean;
+
 	return values;
 }
 
 fixed_point* fp_generate_normal(int n, double mean, double stdev) {
 	fixed_point* fp_values = (fixed_point*)malloc(n * sizeof(fixed_point));
-	double* dbl_values = generate_normal(n);
+	double* dbl_values = generate_normal(n, mean, stdev);
 	int i;
 	for (i = 0; i < n; i++)
 	{
-		fp_values[i] = float_to_fixed((dbl_values[i] * stdev + mean));
+		fp_values[i] = float_to_fixed(dbl_values[i]);
 	}
 	free(dbl_values);
 

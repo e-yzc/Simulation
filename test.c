@@ -9,9 +9,9 @@
 #include <stdlib.h>
 #include <stdbool.h>
 #include "fpmatrix.h"
+#include "dbmatrix.h"
 
-
-int mainr()
+int main()
 {
   int i, j;
   
@@ -164,11 +164,34 @@ int mainr()
   fpm_print(&sprandncm);
   fpm_destroy(&sprandncm);
 
+
+  /**************Double Matrix ************/
+  db_matrix dba, dbb;
+  
+  dbm_init(&dba, 3, 3);
+  dbm_init_ones(&dbb, 3, 3);
+
+  dbm_print(&dba);
+  dbm_print(&dbb);
+
+  dbm_iadd_scalar(&dba, 2);
+  dbm_print(&dba);
+
+  dbm_fillrand(&dba, 0, 1);
+  dbm_print(&dba);
+
+  dbm_imult(&dba, &dbb);
+  dbm_print(&dba);
+
+
   // free resources
   fpm_destroy(&a);
   fpm_destroy(&b);
   fpm_destroy(&c);
   fpm_destroy(&c_t);
   
+  dbm_destroy(&dba);
+  dbm_destroy(&dbb);
+
   return 0;
 }

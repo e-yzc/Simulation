@@ -139,10 +139,12 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="dbmatrix.h" />
     <ClInclude Include="fpmatrix.h" />
     <ClInclude Include="util.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="dbmatrix.c" />
     <ClCompile Include="fpmatrix.c" />
     <ClCompile Include="rc01.c" />
     <ClCompile Include="test.c" />

@@ -1,10 +1,10 @@
-#include "fpmatrix.h"
+#include "dbmatrix.h"
 #include <assert.h>
 
-void fpm_init(fp_matrix* p, size_t rows, size_t cols) {
+void dbm_init(db_matrix* p, size_t rows, size_t cols) {
 	p->rows = rows;
 	p->cols = cols;
-	p->data = malloc(sizeof(fixed_point) * rows * cols);
+	p->data = malloc(sizeof(double) * rows * cols);
 
 	if (p->data == NULL) return;	// in case allocation fails
 
@@ -15,40 +15,38 @@ void fpm_init(fp_matrix* p, size_t rows, size_t cols) {
 
 }
 
-void fpm_init_ones(fp_matrix* p, size_t rows, size_t cols) {
+void dbm_init_ones(db_matrix* p, size_t rows, size_t cols) {
 	p->rows = rows;
 	p->cols = cols;
-	p->data = malloc(sizeof(fixed_point) * rows * cols);
+	p->data = malloc(sizeof(double) * rows * cols);
 
 	if (p->data == NULL) return;	// in case allocation fails
-
-	fixed_point fp_one = float_to_fixed(1.0);
 
 	unsigned i, j;
 	for (i = 0; i < rows; i++)
 		for (j = 0; j < cols; j++)
-			(p->data)[i * cols + j] = fp_one;
+			(p->data)[i * cols + j] = 1.;
 }
 
-void fpm_destroy(fp_matrix* p) {
+void dbm_destroy(db_matrix* p) {
 	if (p->data == NULL) return;
 	free(p->data);
 }
 
-void fpm_print(fp_matrix* p) {
+void dbm_print(db_matrix* p) {
 	int i, j;
 	for (i = 0; i < p->rows; i++) {
 		printf("\n");
 		for (j = 0; j < p->cols; j++) {
-			printf("%.4f\t", fixed_to_float(p->data[i * (p->cols) + j]));
+			printf("%.4f\t", p->data[i * (p->cols) + j]);
 		}
 	}
 	printf("\n");
 }
 
-fp_matrix fpm_copy(fp_matrix* p) {
-	fp_matrix result;
-	fpm_init(&result, p->rows, p->cols);
+db_matrix dbm_copy(db_matrix* p) {
+	db_matrix result;
+	dbm_init(&result, p->rows, p->cols);
 
 	unsigned i, j;
 	for (i = 0; i < p->rows; i++)
@@ -59,9 +57,9 @@ fp_matrix fpm_copy(fp_matrix* p) {
 }
 
 
-fp_matrix fpm_transposed(fp_matrix* p) {
-	fp_matrix result;
-	fpm_init(&result, p->cols, p->rows);
+db_matrix dbm_transposed(db_matrix* p) {
+	db_matrix result;
+	dbm_init(&result, p->cols, p->rows);
 
 	unsigned i, j;
 	for (i = 0; i < p->rows; i++)
@@ -72,7 +70,7 @@ fp_matrix fpm_transposed(fp_matrix* p) {
 }
 
 
-void fpm_copy_to(fp_matrix* original, fp_matrix* target) {
+void dbm_copy_to(db_matrix* original, db_matrix* target) {
 	assert(original->rows == target->rows && original->cols == target->cols);
 
 	unsigned i, j;
@@ -83,76 +81,76 @@ void fpm_copy_to(fp_matrix* original, fp_matrix* target) {
 
 
 // Multiply a fixed point matrix with a scalar.
-void fpm_scale(fp_matrix* p, fixed_point scale) {
+void dbm_scale(db_matrix* p, double scale) {
 	unsigned i, j;
 	for (i = 0; i < p->rows; i++) {
 		for (j = 0; j < p->cols; j++)
-			p->data[i * p->cols + j] = fp_mult(p->data[i * p->cols + j], scale);
+			p->data[i * p->cols + j] *= scale;
 	}
 }
 
-void fpm_iadd_scalar(fp_matrix* p, fixed_point scalar) {
+void dbm_iadd_scalar(db_matrix* p, double scalar) {
 	unsigned i, j;
 	for (i = 0; i < p->rows; i++) {
 		for (j = 0; j < p->cols; j++)
-			p->data[i * p->cols + j] = fp_add(p->data[i * p->cols + j], scalar);
+			p->data[i * p->cols + j] += scalar;
 	}
 }
 
-void fpm_iadd(fp_matrix* lhs, fp_matrix* rhs) {
+void dbm_iadd(db_matrix* lhs, db_matrix* rhs) {
 	assert(lhs->cols == rhs->cols && lhs->rows == rhs->rows);
 
 	unsigned i, j;
 	for (i = 0; i < lhs->rows; i++)
 		for (j = 0; j < lhs->cols; j++)
-			lhs->data[i * lhs->cols + j] = fp_add(lhs->data[i * lhs->cols + j], rhs->data[i * rhs->cols + j]);
+			lhs->data[i * lhs->cols + j] += rhs->data[i * rhs->cols + j];
 }
 
 // Multiply two fixed point matrixes and store the result in the left hand side matrix.
-void fpm_imult(fp_matrix* lhs, fp_matrix* rhs) {
+void dbm_imult(db_matrix* lhs, db_matrix* rhs) {
 	assert(lhs->cols == rhs->rows);
 
 	unsigned i, j, k;
-	fixed_point a, b;
+	double a, b;
 
 	// initialize a temporary matrix to store the intermediate results
-	fp_matrix temp;
-	fpm_init(&temp, lhs->rows, rhs->cols, true);
+	db_matrix temp;
+	dbm_init(&temp, lhs->rows, rhs->cols);
 
 	for (i = 0; i < lhs->rows; i++) {
 		for (j = 0; j < rhs->cols; j++) {
 			for (k = 0; k < lhs->cols; k++) {
 				a = lhs->data[i * lhs->cols + k];
 				b = rhs->data[k * rhs->cols + j];
-				temp.data[i * temp.cols + j] = fp_add(temp.data[i * temp.cols + j], fp_mult(a, b));
+				temp.data[i * temp.cols + j] += a * b;
 			}
 		}
 	}
 
 	// swap the temp matrix with the lhs
-	fixed_point* p = lhs->data;
+	double* p = lhs->data;
 	lhs->data = temp.data;
 	temp.data = p;
 	lhs->cols = temp.cols;
 	lhs->rows = temp.rows;
 
 	// free the old matrix data
-	fpm_destroy(&temp);
+	dbm_destroy(&temp);
 }
 
 // Multiply two fixed point matrixes and return the resulting matrix.
-fp_matrix fpm_mult(fp_matrix* lhs, fp_matrix* rhs) {
+db_matrix dbm_mult(db_matrix* lhs, db_matrix* rhs) {
 	int i, j, k;
-	fixed_point a, b;
-	fp_matrix temp;
-	fpm_init(&temp, lhs->rows, rhs->cols);
+	double a, b;
+	db_matrix temp;
+	dbm_init(&temp, lhs->rows, rhs->cols);
 
 	for (i = 0; i < lhs->rows; i++) {
 		for (j = 0; j < rhs->cols; j++) {
 			for (k = 0; k < lhs->cols; k++) {
 				a = lhs->data[i * lhs->cols + k];
 				b = rhs->data[k * rhs->cols + j];
-				temp.data[i * temp.cols + j] = fp_add(temp.data[i * temp.cols + j], fp_mult(a, b));
+				temp.data[i * temp.cols + j] += a * b;
 			}
 		}
 	}
@@ -161,7 +159,7 @@ fp_matrix fpm_mult(fp_matrix* lhs, fp_matrix* rhs) {
 
 
 
-void fpm_fillrand(fp_matrix* p, fixed_point lower_lim, fixed_point upper_lim) {
+void dbm_fillrand(db_matrix* p, double lower_lim, double upper_lim) {
 	assert(lower_lim < upper_lim);
 
 	unsigned i, j;
@@ -170,24 +168,24 @@ void fpm_fillrand(fp_matrix* p, fixed_point lower_lim, fixed_point upper_lim) {
 	// populate with random number
 	for (i = 0; i < p->rows; i++)
 		for (j = 0; j < p->cols; j++) {
-			fixed_point rand_nb = rand_fp(lower_lim, upper_lim);
+			double rand_nb = rand_db(lower_lim, upper_lim);
 			(p->data)[i * p->cols + j] = rand_nb;
 		}
-	
+
 }
 
 
 
-void fpm_fillrandn(fp_matrix* p, double mean, double stdev) {
+void dbm_fillrandn(db_matrix* p, double mean, double stdev) {
 
 	unsigned i, j;
 	unsigned nb_vals;
 
-	fixed_point* normal_set;
+	double* normal_set;
 
 	// generate normal set
 	nb_vals = p->rows * p->cols;
-	normal_set = fp_generate_normal(nb_vals, mean, stdev);
+	normal_set = generate_normal(nb_vals, mean, stdev);
 
 	// populate the matrix
 	for (i = 0; i < p->rows; i++)
@@ -198,7 +196,7 @@ void fpm_fillrandn(fp_matrix* p, double mean, double stdev) {
 	free(normal_set);
 }
 
-void fpm_fillsprand(fp_matrix* p, fixed_point lower_lim, fixed_point upper_lim, double density) {
+void dbm_fillsprand(db_matrix* p, double lower_lim, double upper_lim, double density) {
 
 	assert(lower_lim < upper_lim);
 
@@ -217,23 +215,23 @@ void fpm_fillsprand(fp_matrix* p, fixed_point lower_lim, fixed_point upper_lim, 
 
 		// to ensure the element is always non-zero regardless of upper and lower lim
 		while (p->data[i * p->cols + j] == 0) {
-			p->data[i * p->cols + j] = rand_fp(lower_lim, upper_lim);
+			p->data[i * p->cols + j] = rand_db(lower_lim, upper_lim);
 		}
 	}
 }
 
-void fpm_fillsprandn(fp_matrix* p, double mean, double stdev, double density) {
+void dbm_fillsprandn(db_matrix* p, double mean, double stdev, double density) {
 
 	size_t nb_nonzeros;
 	size_t nb_vals;
 	size_t i, j;
 
-	fixed_point* normal_set;
+	double* normal_set;
 
 	// number of non-zero elements
 	nb_nonzeros = (size_t)(density * p->rows * p->cols * 2 + 1) / 2;
 
-	normal_set = fp_generate_normal(nb_nonzeros, mean, stdev);
+	normal_set = generate_normal(nb_nonzeros, mean, stdev);
 
 	// fill the matrix
 	for (; nb_nonzeros > 0; nb_nonzeros--) {
@@ -241,7 +239,7 @@ void fpm_fillsprandn(fp_matrix* p, double mean, double stdev, double density) {
 		do {
 			i = rand_number16(p->rows - 1);
 			j = rand_number16(p->cols - 1);
-		} while(p->data[i * p->cols + j] != 0);
+		} while (p->data[i * p->cols + j] != 0);
 
 		p->data[i * p->cols + j] = normal_set[nb_nonzeros - 1];
 	}

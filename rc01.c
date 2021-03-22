@@ -17,11 +17,12 @@
  ********************************************/
 
 #include "fpmatrix.h"
+#include "dbmatrix.h"
 #define _USE_MATH_DEFINES 
 #include <math.h>
 #include <stdio.h>
 
-int main() {
+int mains() {
 
 	// set the seed
 	srand((unsigned)time(NULL));

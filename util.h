@@ -103,9 +103,10 @@ int rand_number16(int n);
 int rand_number32(int n);
 
 fixed_point rand_fp(fixed_point, fixed_point);
+double rand_db(double, double);
 
-// Generates a normal distribution set with n elements with mean = 0 stdev = 1
-double* generate_normal(int n);
+// Generates a normal distribution set with n elements
+double* generate_normal(int n, double mean, double stdev);
 
 // Generates a normal distribution set with n elements in fixed point format 
 fixed_point* fp_generate_normal(int n, double mean, double stdev);
