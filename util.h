@@ -12,8 +12,8 @@
 #include <stdint.h>
 #include <math.h>
 
-#define FRACTIONAL_BITS 6
-#define INTEGER_BITS 6
+#define FRACTIONAL_BITS 9
+#define INTEGER_BITS 2
 #define SIGN_BIT 1
 #define TOTAL_BITS (FRACTIONAL_BITS + INTEGER_BITS + SIGN_BIT)
 
@@ -47,9 +47,9 @@ inline fixed_point float_to_fixed(double input)
 #if SIGN_BIT == 1
 	int sign = input < 0;
 	if (sign) input = -input;
-	fixed_point res = (fixed_point)(round(input * (double)(1 << FRACTIONAL_BITS)));
-	if (sign) res = ((res^FPMASK) + (fixed_point)1) & FPMASK;
-	return res;
+	fixed_point res = (fixed_point)( round(input * (double) (1 << FRACTIONAL_BITS)) ) ;
+	if (sign) res = fp_inverse(res);
+	return res & FPMASK;
 #else
 	return (fixed_point)(round(input * (1 << FRACTIONAL_BITS)));
 #endif
@@ -78,22 +78,18 @@ inline fixed_point fp_add(fixed_point lhs, fixed_point rhs) {
 	//}
 
 	return res;
-	//return float_to_fixed(fixed_to_float(lhs) + fixed_to_float(rhs));
 }
 
 // Multiply two fixed point numbers
 inline fixed_point fp_mult(fixed_point lhs, fixed_point rhs) {
 	//return float_to_fixed(fixed_to_float(lhs) * fixed_to_float(rhs));
 
-	// TODO: debug twos complement multiplication
 	// flip the sign of the negative operands. the result is negative if only one of the operands is negative
 	int lhs_sign = ((1 << (TOTAL_BITS - 1)) & lhs);
 	if (lhs_sign) lhs = fp_inverse(lhs);
 	int rhs_sign = ((1 << (TOTAL_BITS - 1)) & rhs);
 	if (rhs_sign) rhs = fp_inverse(rhs);
 
-	//printf("lhs = %f, rhs = %f\n", fixed_to_float(lhs), fixed_to_float(lhs));
-	//printf("inside parantheses: %x\n",(lhs * rhs >> FRACTIONAL_BITS));
 	fixed_point res = (lhs * rhs >> FRACTIONAL_BITS) & FPMASK;
 
 	return (lhs_sign ^ rhs_sign ? fp_inverse(res) : res);
@@ -118,5 +114,7 @@ double stddev(double* values, int n);
 fixed_point fp_mean(fixed_point* values, int n);
 
 fixed_point fp_stddev(fixed_point* values, int n);
+
+
 
 #endif

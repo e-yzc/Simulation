@@ -11,7 +11,7 @@
 #include "fpmatrix.h"
 #include "dbmatrix.h"
 
-int main()
+int mains()
 {
   int i, j;
   
@@ -20,11 +20,11 @@ int main()
 
   fixed_point x, y;
   double dbl = -7.5;
-  x = 7<<FRACTIONAL_BITS;//fp_inverse(7 << FRACTIONAL_BITS);
+  x = 3<<FRACTIONAL_BITS;//fp_inverse(7 << FRACTIONAL_BITS);
   printf("%x -> %f\n",(int)x,fixed_to_float(x));
   printf("%f -> %x\n", dbl, float_to_fixed(dbl));
 
-  y = 5 << FRACTIONAL_BITS;
+  y = 2 << FRACTIONAL_BITS;
 
   printf("%x + %x = %x\n",x, y, fp_add(x,y));
   printf("Expected result: %x\n", float_to_fixed(fixed_to_float(x) + fixed_to_float(y)));
