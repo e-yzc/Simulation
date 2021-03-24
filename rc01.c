@@ -41,7 +41,7 @@ int main() {
 	unsigned N, nsecs, learn_every;
 	double p, g, alpha, dt;
 
-	N = 100;
+	N = 300;
 	p = 0.1;
 	g = 1.5;	// g greater than 1 leads to chaotic networks.
 	alpha = 1;
@@ -97,7 +97,7 @@ int main() {
 	}
 
 	double amp, freq;
-	amp = 1.3;
+	amp = 6.5;
 	freq = 1. / 60;
 
 	fpm_init(&zt, 1, simtime_len);
