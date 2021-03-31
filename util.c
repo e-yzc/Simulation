@@ -10,39 +10,6 @@
 #include <time.h>
 #include <stdlib.h>
 
-
-//inline double fixed_to_float(fixed_point input)
-//{
-//#if SIGN_BIT == 1
-//	int sign = (1 << (INTEGER_BITS + FRACTIONAL_BITS) & input);
-//	if (sign) input = input ^ (1 << (INTEGER_BITS + FRACTIONAL_BITS));
-//	return (sign ? -1 : 1) * ((double)input / (double)(1 << FRACTIONAL_BITS));
-//#else
-//	return ((double)input / (double)(1 << FRACTIONAL_BITS));
-//#endif
-//}
-//
-//
-//inline fixed_point float_to_fixed(double input)
-//{
-//#if SIGN_BIT == 1
-//	int sign = input < 0;
-//	if (sign) input = -input;
-//	return (sign ? 1 << (INTEGER_BITS + FRACTIONAL_BITS) : 0) | (fixed_point)(round(input * (double)(1 << FRACTIONAL_BITS)));
-//#else
-//	return (fixed_point)(round(input * (1 << FRACTIONAL_BITS)));
-//#endif
-//}
-//
-//
-//inline fixed_point fp_add(fixed_point lhs, fixed_point rhs) {
-//	return lhs + rhs;
-//}
-//
-//inline fixed_point fp_mult(fixed_point lhs, fixed_point rhs) {
-//	return float_to_fixed(fixed_to_float(lhs) * fixed_to_float(rhs));
-//}
-
 /* return a uniform random value in the range 0..n-1 inclusive 
 * taken from https://www.cs.yale.edu/homes/aspnes/pinewiki/C(2f)Randomization.html
 */

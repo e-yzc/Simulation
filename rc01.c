@@ -18,6 +18,7 @@
 
 #include "fpmatrix.h"
 #include "dbmatrix.h"
+#include "sim_params.h"
 #define _USE_MATH_DEFINES 
 #include <math.h>
 #include <stdio.h>
@@ -41,13 +42,13 @@ int main() {
 	unsigned N, nsecs, learn_every;
 	double p, g, alpha, dt;
 
-	N = 300;
-	p = 0.1;
-	g = 1.5;	// g greater than 1 leads to chaotic networks.
-	alpha = 1;
-	nsecs = 1440;
-	dt = 0.1;
-	learn_every = 2;
+	N = SIM_N;
+	p = SIM_p;
+	g = SIM_g;	// g greater than 1 leads to chaotic networks.
+	alpha = SIM_alpha;
+	nsecs = SIM_nsecs;
+	dt = SIM_dt;
+	learn_every = SIM_learn_every;
 
 	double scale;
 	scale = 1.0 / sqrt(p * N);
@@ -95,9 +96,9 @@ int main() {
 	for (i = 0; i < simtime_len; i++) {
 		simtime2[i] = nsecs + i * dt;
 	}
-
+	
 	double amp, freq;
-	amp = 6.5;
+	amp = 13;
 	freq = 1. / 60;
 
 	fpm_init(&zt, 1, simtime_len);
@@ -186,7 +187,7 @@ int main() {
 	z_db = fixed_to_float(z);
 
 	// Output file header
-	fprintf(res_file, "ft, zt, wo_len, ft2, zpt\n");
+	fprintf(res_file, "ft,zt,wo_len,ft2,zpt\n");
 
 
 	printf("Learning...\n");
@@ -339,10 +340,11 @@ int main() {
 		}
 	}
 
+	printf("\n");
 
 	// write results
 	for (i = 0; i < simtime_len; i++) {
-		fprintf(res_file, "%f, %f, %f, %f, %f\n", ft.data[i], zt_db.data[i], wo_len_db.data[i], ft2.data[i], fixed_to_float(zpt.data[i]));
+		fprintf(res_file, "%f,%f,%f,%f,%f\n", ft.data[i], zt_db.data[i], wo_len_db.data[i], ft2.data[i], fixed_to_float(zpt.data[i]));
 	}
 
 	// free resources

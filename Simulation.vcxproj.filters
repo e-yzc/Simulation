@@ -18,11 +18,20 @@
     <ClInclude Include="util.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="fpmatrix.h">
-      <Filter>Source Files</Filter>
+    <ClInclude Include="fixed_point.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="fp_params.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="dbmatrix.h">
-      <Filter>Source Files</Filter>
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="fpmatrix.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="sim_params.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
