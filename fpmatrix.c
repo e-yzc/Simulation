@@ -205,20 +205,25 @@ void fpm_fillsprand(fp_matrix* p, fixed_point lower_lim, fixed_point upper_lim, 
 	// number of non-zero elements
 	size_t nb_nonzeros;
 	nb_nonzeros = (size_t)(density * p->rows * p->cols * 2 + 1) / 2;
+	
+	size_t i, j;
+	if (nb_nonzeros >= p->cols * p->rows) {
+		for (i = 0; i < p->rows*p->cols; i++)
+			p->data[i] = rand_fp(lower_lim, upper_lim);
+		return;
+	}
 
 	// fill the matrix
-	size_t i, j;
-	for (; nb_nonzeros > 0; nb_nonzeros--) {
+	for (; nb_nonzeros > 0;) {
+		nb_nonzeros--;
+
 		// choose a random element that's not already non-zero
 		do {
-			i = rand_number16(p->rows - 1);
-			j = rand_number16(p->cols - 1);
+			i = p->rows > 1 ? rand_number16(p->rows - 1) : 0;
+			j = p->cols > 1 ? rand_number16(p->cols - 1) : 0;
 		} while (p->data[i * p->cols + j] != 0);
-
-		// to ensure the element is always non-zero regardless of upper and lower lim
-		while (p->data[i * p->cols + j] == 0) {
-			p->data[i * p->cols + j] = rand_fp(lower_lim, upper_lim);
-		}
+			
+		p->data[i * p->cols + j] = rand_fp(lower_lim, upper_lim);
 	}
 }
 
@@ -233,14 +238,16 @@ void fpm_fillsprandn(fp_matrix* p, double mean, double stdev, double density) {
 	// number of non-zero elements
 	nb_nonzeros = (size_t)(density * p->rows * p->cols * 2 + 1) / 2;
 
+	if (nb_nonzeros > p->cols * p->rows) nb_nonzeros = p->cols * p->rows;
+
 	normal_set = fp_generate_normal(nb_nonzeros, mean, stdev);
 
 	// fill the matrix
 	for (; nb_nonzeros > 0; nb_nonzeros--) {
 		// choose a random element that's not already non-zero
 		do {
-			i = rand_number16(p->rows - 1);
-			j = rand_number16(p->cols - 1);
+			i = p->rows > 1 ? rand_number16(p->rows - 1) : 0;
+			j = p->cols > 1 ? rand_number16(p->cols - 1) : 0;
 		} while(p->data[i * p->cols + j] != 0);
 
 		p->data[i * p->cols + j] = normal_set[nb_nonzeros - 1];
@@ -248,3 +255,33 @@ void fpm_fillsprandn(fp_matrix* p, double mean, double stdev, double density) {
 	free(normal_set);
 }
 
+
+void fpm_make_sparse(fp_matrix* p, double density) {
+	unsigned nb_zeros, i, j;
+	unsigned* indexes;
+	unsigned tmp;
+
+	nb_zeros = floor((1 - density) * p->rows * p->cols);
+	
+	// this will hold the indexes which will be set to zero in the matrix
+	indexes = (unsigned*)malloc(sizeof(unsigned) * nb_zeros);
+
+	for (i = 0; i < nb_zeros; i++) {
+		indexes[i] = i;
+	}
+
+	// shuffle indexes to create a random sequence of unique numbers
+	for (i = 0; i < nb_zeros; i++) {
+		j = i > 0 ? rand_number16(i) : 0;
+		tmp = indexes[i];
+		indexes[i] = indexes[j];
+		indexes[j] = tmp;
+	}
+
+
+	for (i = 0; i < nb_zeros; i++) {
+		p->data[indexes[i]] = 0;
+	}
+
+	free(indexes);
+}

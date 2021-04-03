@@ -40,7 +40,7 @@ int main() {
 	fp_matrix M, wo, wf, wi, zt, zpt, z0, x0, x, r;
 	fixed_point z;
 	unsigned N, nsecs, learn_every;
-	double p, g, alpha, dt;
+	double p, g, alpha, dt, input_connectivity, output_connectivity;
 
 	N = SIM_N;
 	p = SIM_p;
@@ -49,6 +49,8 @@ int main() {
 	nsecs = SIM_nsecs;
 	dt = SIM_dt;
 	learn_every = SIM_learn_every;
+	input_connectivity = SIM_in_conn;
+	output_connectivity = SIM_out_conn;
 
 	double scale;
 	scale = 1.0 / sqrt(p * N);
@@ -59,29 +61,29 @@ int main() {
 	fpm_scale(&M, float_to_fixed(g * scale));
 
 
-	unsigned nRec2Out;
-	nRec2Out = N;
-	fpm_init(&wo, nRec2Out, 1);
+	fpm_init(&wo, N, 1);
 
-	fpm_init(&wf, nRec2Out, 1);
+	fpm_init(&wf, N, 1);
 	fpm_fillrand(&wf, 0, float_to_fixed(1));
 	fpm_iadd_scalar(&wf, float_to_fixed(-0.5));
 	fpm_scale(&wf, float_to_fixed(2));
-
-	unsigned nC2In;
-	nC2In = N; // fully connected input
-	fpm_init(&wi, nC2In, 1);
+	//fpm_make_sparse(&wf, output_connectivity);
+	
+	fpm_init(&wi, N, 1);
 	fpm_fillrand(&wi, 0, float_to_fixed(1));
 	fpm_iadd_scalar(&wi, float_to_fixed(-0.5));
 	fpm_scale(&wi, float_to_fixed(2));
+	//fpm_make_sparse(&wi, input_connectivity);
 
 	printf("\tN: %d\n", N);
 	printf("\tg: %f\n", g);
 	printf("\tp: %f\n", p);
-	printf("\tnRec2Out: %d\n", nRec2Out);
+	printf("\tInput Connectivity: %f\n", input_connectivity);
+	printf("\tOutput Connectivity: %f\n", output_connectivity);
 	printf("\talpha: %f\n", alpha);
 	printf("\tnsecs: %d\n", nsecs);
 	printf("\tlearn_every: %d\n", learn_every);
+
 
 	double* simtime;
 	size_t simtime_len;
@@ -144,17 +146,17 @@ int main() {
 	db_matrix P, k, x_db, M_db, r_db, wf_db, wi_db, wo_db, zt_db, dw, wo_len_db;
 	double z_db, rPr, e, c;
 	// initialize P matrix
-	dbm_init(&P, nRec2Out, nRec2Out);
+	dbm_init(&P, N, N);
 	for (i = 0; i < P.rows; i++)
 		for (j = 0; j < P.cols; j++)
 			P.data[i * P.cols + j] = (i == j) ? 1. : 0.;
 	dbm_scale(&P, (1.0 / alpha));
 
 	// initialize k
-	dbm_init(&k, nRec2Out, 1);
+	dbm_init(&k, N, 1);
 
 	dbm_init(&wo_len_db, 1, simtime_len);
-	dbm_init(&dw, nRec2Out, 1);
+	dbm_init(&dw, N, 1);
 
 	// transform fixed point matrixes to double
 	dbm_init(&x_db, x.rows, x.cols);

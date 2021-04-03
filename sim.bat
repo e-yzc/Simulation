@@ -5,7 +5,7 @@ REM create file to hold the analysis variables for each simulation
 	echo training_cost,test_cost
 )>script_out.csv
 
-for /l %%x in (100, 25, 1000) do (
+for /l %%x in (20, -2, 1) do (
 	REM Redefine fixed_point parameters
 	(	
 		echo /*******************************************
@@ -16,10 +16,9 @@ for /l %%x in (100, 25, 1000) do (
 		echo.
 		echo #pragma once
 		echo.
-		echo #define FRACTIONAL_BITS 27
+		echo #define FRACTIONAL_BITS 12
 		echo #define INTEGER_BITS 4
 		echo #define SIGN_BIT 1
-		echo //%%x
 	)>fp_params.h
 	REM Redefine network parameters
 	(	
@@ -31,13 +30,15 @@ for /l %%x in (100, 25, 1000) do (
 		echo.
 		echo #pragma once
 		echo.
-		echo #define SIM_N %%x
-		echo #define SIM_p 0.1
+		echo #define SIM_N 100
+		echo #define SIM_p 1. / (%%x^)
 		echo #define SIM_g 1.5
 		echo #define SIM_alpha 1
 		echo #define SIM_nsecs 1440
 		echo #define SIM_dt 0.1
 		echo #define SIM_learn_every 2
+		echo #define SIM_in_conn 1
+		echo #define SIM_out_conn 1
 	)>sim_params.h
 	:: Build and execute
 	msbuild Simulation.sln -v:q -p:warninglevel=0 -p:Configuration=Release -p:platform=x86

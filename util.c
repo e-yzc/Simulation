@@ -18,7 +18,7 @@ int rand_number16(int n) {
 
 	int limit;
 	int r;
-	
+
 	limit = RAND_MAX - (RAND_MAX % n);
 
 	while ((r = rand()) >= limit);
