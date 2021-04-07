@@ -5,7 +5,7 @@ REM create file to hold the analysis variables for each simulation
 	echo training_cost,test_cost
 )>script_out.csv
 
-for /l %%x in (20, -2, 1) do (
+for /l %%x in (1, 1, 18) do (
 	REM Redefine fixed_point parameters
 	(	
 		echo /*******************************************
@@ -16,8 +16,8 @@ for /l %%x in (20, -2, 1) do (
 		echo.
 		echo #pragma once
 		echo.
-		echo #define FRACTIONAL_BITS 12
-		echo #define INTEGER_BITS 4
+		echo #define FRACTIONAL_BITS %%x
+		echo #define INTEGER_BITS 2
 		echo #define SIGN_BIT 1
 	)>fp_params.h
 	REM Redefine network parameters
@@ -31,7 +31,7 @@ for /l %%x in (20, -2, 1) do (
 		echo #pragma once
 		echo.
 		echo #define SIM_N 100
-		echo #define SIM_p 1. / (%%x^)
+		echo #define SIM_p 0.1
 		echo #define SIM_g 1.5
 		echo #define SIM_alpha 1
 		echo #define SIM_nsecs 1440
