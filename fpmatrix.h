@@ -10,6 +10,7 @@
 
 #include "util.h"
 
+
 typedef struct fp_matrix
 {
     size_t rows;
@@ -81,5 +82,6 @@ void fpm_fillsprand(fp_matrix* p, fixed_point lower_lim, fixed_point upper_lim, 
 // Seed is generated from system clock
 void fpm_fillsprandn(fp_matrix* p, double mean, double stdev, double density);
 
+void fpm_make_sparse(fp_matrix* p, double density);
 
 #endif
