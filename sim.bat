@@ -2,10 +2,10 @@
 
 REM create file to hold the analysis variables for each simulation
 (	
-	echo training_cost,test_cost
+	echo train_corrcoef,test_corrcoef, train_rmse, test_rmse
 )>script_out.csv
 
-for /l %%x in (1, 1, 18) do (
+for /l %%x in (1, 1, 10) do (
 	REM Redefine fixed_point parameters
 	(	
 		echo /*******************************************
@@ -30,18 +30,16 @@ for /l %%x in (1, 1, 18) do (
 		echo.
 		echo #pragma once
 		echo.
-		echo #define SIM_N 100
+		echo #define SIM_N 500
 		echo #define SIM_p 0.1
 		echo #define SIM_g 1.5
 		echo #define SIM_alpha 1
 		echo #define SIM_nsecs 1440
 		echo #define SIM_dt 0.1
 		echo #define SIM_learn_every 2
-		echo #define SIM_in_conn 1
-		echo #define SIM_out_conn 1
 	)>sim_params.h
 	:: Build and execute
-	msbuild Simulation.sln -v:q -p:warninglevel=0 -p:Configuration=Release -p:platform=x86
+	msbuild Simulation.sln -v:q -p:warninglevel=0 -p:Configuration=Release -p:platform=x86 /m
 	cd Release
 	Simulation.exe
 	cd ..

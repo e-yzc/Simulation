@@ -185,48 +185,75 @@ int main() {
 	for (t = 0; t < simtime_len; t++) {
 		// temporary matrix variable
 		db_matrix tmp, tmp2;
-		
+		fp_matrix tmp_fp, tmp2_fp;
+
 		// % sim, so x(t) and r(t) are created.
 
 		/*** x = (1.0-dt)*x + M*(r*dt) + wf*(z*dt) + wi*(ft(ti)*dt) ***/
 		// scale x by 1-dt
-		dbm_scale(&x_db, 1.0 - dt);
+		//dbm_scale(&x_db, 1.0 - dt);
+		fpm_scale(&x, float_to_fixed(1. - dt));
 
 		// create temporary matrix to hold intermediate values, add to x
-		tmp = dbm_mult(&M_db, &r_db);
-		dbm_scale(&tmp, dt);
-		dbm_iadd(&x_db, &tmp);
+		//tmp = dbm_mult(&M_db, &r_db);
+		//dbm_scale(&tmp, dt);
+		//dbm_iadd(&x_db, &tmp);
 
+		tmp_fp = fpm_mult(&M, &r);
+		fpm_scale(&tmp_fp, float_to_fixed(dt));
+		fpm_iadd(&x, &tmp_fp);
 		
-		dbm_destroy(&tmp);
-		tmp = dbm_copy(&wf_db);
-		dbm_scale(&tmp, z);
-		dbm_scale(&tmp, dt);
-		dbm_iadd(&x_db, &tmp);
+		//dbm_destroy(&tmp);
+		//tmp = dbm_copy(&wf_db);
+		//dbm_scale(&tmp, z);
+		//dbm_scale(&tmp, dt);
+		//dbm_iadd(&x_db, &tmp);
 
-		dbm_destroy(&tmp);
-		tmp = dbm_copy(&wi_db);
-		dbm_scale(&tmp, ft.data[t]);
-		dbm_scale(&tmp, dt);
-		dbm_iadd(&x_db, &tmp);
+		fpm_destroy(&tmp_fp);
+		tmp_fp = fpm_copy(&wf);
+		fpm_scale(&tmp_fp, float_to_fixed(z*dt));
+		fpm_iadd(&x, &tmp_fp);
+
+
+		//dbm_destroy(&tmp);
+		//tmp = dbm_copy(&wi_db);
+		//dbm_scale(&tmp, ft.data[t]);
+		//dbm_scale(&tmp, dt);
+		//dbm_iadd(&x_db, &tmp);
+		fpm_destroy(&tmp_fp);
+		tmp_fp = fpm_copy(&wi);
+		fpm_scale(&tmp_fp, float_to_fixed(ft.data[t] * dt));
+		fpm_iadd(&x, &tmp_fp);
 
 		// update r
-		for (i = 0; i < r_db.cols * r_db.rows; i++)
-			r_db.data[i] = tanh(fixed_to_float(float_to_fixed(x_db.data[i]))); // match non-linearity with fp case
-		
+		//for (i = 0; i < r_db.cols * r_db.rows; i++)
+		//	r_db.data[i] = tanh(fixed_to_float(float_to_fixed(x_db.data[i]))); // match non-linearity with fp case
+		for (i = 0; i < r.cols * r.rows; i++)
+			r.data[i] = float_to_fixed(tanh(fixed_to_float(x.data[i])));
+
 		// update z
-		dbm_destroy(&tmp);
-		tmp = dbm_transposed(&wo);
-		dbm_imult(&tmp, &r_db);
-		//dbm_print(&tmp);
-		z = tmp.data[0];
+		//dbm_destroy(&tmp);
+		//tmp = dbm_transposed(&wo);
+		//dbm_imult(&tmp, &r_db);
+		////dbm_print(&tmp);
+		//z = tmp.data[0];
+
+		z = 0.;
+		for (i = 0; i < N; i++) {
+			z += wo.data[i] * fixed_to_float(r.data[i]);
+		}
+
 
 		if (t % learn_every == 0) {
+			// update r_db
+			for (i = 0; i < r.cols * r.rows; i++)
+				r_db.data[i] = fixed_to_float(r.data[i]);
+
 			// update inverse correlation matrix
 			dbm_destroy(&k);
 			k = dbm_mult(&P, &r_db);
 			//dbm_print(&P);
-			dbm_destroy(&tmp);
+			//dbm_destroy(&tmp);
 			tmp = dbm_transposed(&r_db);	// tmp = r'
 			dbm_imult(&tmp, &k); // tmp = r'k, should be 1-by-1
 			rPr = tmp.data[0];
@@ -286,14 +313,12 @@ int main() {
 		fpm_destroy(&tmp);
 
 		tmp = fpm_copy(&wf);
-		fpm_scale(&tmp, float_to_fixed(z));
-		fpm_scale(&tmp, float_to_fixed(dt));
+		fpm_scale(&tmp, float_to_fixed(z * dt));
 		fpm_iadd(&x, &tmp);
 		fpm_destroy(&tmp);
 
 		tmp = fpm_copy(&wi);
-		fpm_scale(&tmp, float_to_fixed(ft2.data[t]));
-		fpm_scale(&tmp, float_to_fixed(dt));
+		fpm_scale(&tmp, float_to_fixed(ft2.data[t] * dt));
 		fpm_iadd(&x, &tmp);
 		fpm_destroy(&tmp);
 
@@ -305,8 +330,7 @@ int main() {
 		// output with float weights
 		z = 0.;
 		for (i = 0; i < N; i++) {
-			//z += wo.data[i] * fixed_to_float(r.data[i]);
-			z += wo.data[i] * tanh(fixed_to_float(x.data[i]));
+			z += wo.data[i] * fixed_to_float(r.data[i]);
 		}
 		zpt.data[t] = z;
 

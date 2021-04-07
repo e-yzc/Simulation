@@ -6,12 +6,10 @@
 
 #pragma once
 
-#define SIM_N 300
+#define SIM_N 500
 #define SIM_p 0.1
 #define SIM_g 1.5
 #define SIM_alpha 1
 #define SIM_nsecs 1440
 #define SIM_dt 0.1
 #define SIM_learn_every 2
-#define SIM_in_conn 1
-#define SIM_out_conn 1
