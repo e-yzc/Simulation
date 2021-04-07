@@ -6,6 +6,6 @@
 
 #pragma once
 
-#define FRACTIONAL_BITS 10
+#define FRACTIONAL_BITS 6
 #define INTEGER_BITS 2
 #define SIGN_BIT 1

@@ -147,3 +147,41 @@ fixed_point fp_stddev(fixed_point* values, int n) {
 	return float_to_fixed(sqrt(s / (n - 1)));
 
 }
+
+/**
+* Basic Lorenz attractor calculation. Returns the distance from the origin.
+* source: https://www.algosome.com/articles/lorenz-attractor-programming-code.html
+*/
+double* lorenz_attractor(unsigned n, double t) {
+
+	double x = 0.1;
+	double y = 0;
+	double z = 0;
+
+	double a = 10.0;
+	double b = 28.0;
+	double c = 8.0 / 3.0;
+
+	unsigned i;
+
+	double* result = malloc(sizeof(double) * n);
+
+	//Iterate and update x,y and z locations
+
+	//based upon the Lorenz equations
+
+	for (i = 0; i < n; i++) {
+
+		double xt = x + t * a * (y - x);
+		double yt = y + t * (x * (b - z) - y);
+		double zt = z + t * (x * y - c * z);
+
+		x = xt;
+		y = yt;
+		z = zt;
+
+		result[i] = sqrt(x * x + y * y + z * z);
+	}
+
+	return result;
+}

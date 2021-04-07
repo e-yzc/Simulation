@@ -33,6 +33,6 @@ fixed_point fp_mean(fixed_point* values, int n);
 
 fixed_point fp_stddev(fixed_point* values, int n);
 
-
+double* lorenz_attractor(unsigned n, double t);
 
 #endif

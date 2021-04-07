@@ -123,20 +123,31 @@ int main() {
 	dbm_init(&ft, simtime_len, 1);
 	dbm_init(&ft2, simtime_len, 1);
 
+	//for (i = 0; i < simtime_len; i++) {
+	//	ft.data[i] = ((amp / 1.0) * sin(1.0 * M_PI * freq * simtime[i]) +
+	//		(amp / 2.0) * sin(2.0 * M_PI * freq * simtime[i]) +
+	//		(amp / 6.0) * sin(3.0 * M_PI * freq * simtime[i]) +
+	//		(amp / 3.0) * sin(4.0 * M_PI * freq * simtime[i])) / 1.5;
+	//}
+
+	//for (i = 0; i < simtime_len; i++)
+	//	ft2.data[i] = ((amp / 1.0) * sin(1.0 * M_PI * freq * simtime[i]) +
+	//		(amp / 2.0) * sin(2.0 * M_PI * freq * simtime[i]) +
+	//		(amp / 6.0) * sin(3.0 * M_PI * freq * simtime[i]) +
+	//		(amp / 3.0) * sin(4.0 * M_PI * freq * simtime[i])) / 1.5;
+
+
+	// case ft != ft2
+	double* lorenz = lorenz_attractor(2 * simtime_len, dt * 0.1);
 	for (i = 0; i < simtime_len; i++) {
-		ft.data[i] = ((amp / 1.0) * sin(1.0 * M_PI * freq * simtime[i]) +
-			(amp / 2.0) * sin(2.0 * M_PI * freq * simtime[i]) +
-			(amp / 6.0) * sin(3.0 * M_PI * freq * simtime[i]) +
-			(amp / 3.0) * sin(4.0 * M_PI * freq * simtime[i])) / 1.5;
+		ft.data[i] = 0.1 * lorenz[i];
+		ft2.data[i] = 0.1 * lorenz[simtime_len + i];
 	}
-
-	for (i = 0; i < simtime_len; i++)
-		ft2.data[i] = ((amp / 1.0) * sin(1.0 * M_PI * freq * simtime[i]) +
-			(amp / 2.0) * sin(2.0 * M_PI * freq * simtime[i]) +
-			(amp / 6.0) * sin(3.0 * M_PI * freq * simtime[i]) +
-			(amp / 3.0) * sin(4.0 * M_PI * freq * simtime[i])) / 1.5;
-
-
+	//ft.data = lorenz_attractor(simtime_len, dt*0.1);
+	//for (i = 0; i < simtime_len; i++) {
+	//	ft.data[i] *= 0.1; // reduce the amplitude
+	//	ft2.data[i] = ft.data[i];
+	//}
 
 	/***** Learning algorithm *****/
 

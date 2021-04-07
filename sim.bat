@@ -5,7 +5,7 @@ REM create file to hold the analysis variables for each simulation
 	echo train_corrcoef,test_corrcoef, train_rmse, test_rmse
 )>script_out.csv
 
-for /l %%x in (1, 1, 10) do (
+for /l %%x in (50, 50, 1000) do (
 	REM Redefine fixed_point parameters
 	(	
 		echo /*******************************************
@@ -16,7 +16,7 @@ for /l %%x in (1, 1, 10) do (
 		echo.
 		echo #pragma once
 		echo.
-		echo #define FRACTIONAL_BITS %%x
+		echo #define FRACTIONAL_BITS 6
 		echo #define INTEGER_BITS 2
 		echo #define SIGN_BIT 1
 	)>fp_params.h
@@ -30,11 +30,11 @@ for /l %%x in (1, 1, 10) do (
 		echo.
 		echo #pragma once
 		echo.
-		echo #define SIM_N 500
+		echo #define SIM_N %%x
 		echo #define SIM_p 0.1
 		echo #define SIM_g 1.5
 		echo #define SIM_alpha 1
-		echo #define SIM_nsecs 1440
+		echo #define SIM_nsecs 500
 		echo #define SIM_dt 0.1
 		echo #define SIM_learn_every 2
 	)>sim_params.h
