@@ -54,25 +54,25 @@ inline fixed_point float_to_fixed(double input)
 // Add two fixed point numbers
 inline fixed_point fp_add(fixed_point lhs, fixed_point rhs) {
 	// no overflow
-	int lhs_sign = ((FPMASK + 1) & lhs);
-	int rhs_sign = ((FPMASK + 1) & lhs);
-
-	fixed_point res = (lhs + rhs) & FPMASK;
+	long long lhs_sign = ((FPMASK + 1)>>1 & lhs);
+	long long rhs_sign = ((FPMASK + 1)>>1 & rhs);
+	fixed_point res = (lhs + rhs);
+	//return res & FPMASK;
 
 	//// check overflow if both are negative
 	//if (lhs_sign && rhs_sign) {
-	//	bool res_sign = ((FPMASK + 1) & res);
+	//	bool res_sign = ((FPMASK + 1)>>1 & res);
 	//	if (res_sign) return res;	// no overflow
-	//	else return (FPMASK >> 1) + 1; // return max negative if overflow
+	//	else return 1 << (FRACTIONAL_BITS + INTEGER_BITS); // return max negative if overflow
 	//}
 
 	//if (!(lhs_sign || rhs_sign)) {
-	//	bool res_sign = ((FPMASK + 1) & res);
+	//	bool res_sign = ((FPMASK + 1)>>1 & res);
 	//	if (!res_sign) return res;
 	//	else return (FPMASK >> 1);
 	//}
 
-	return res;
+	return res & FPMASK;
 }
 
 // Multiply two fixed point numbers

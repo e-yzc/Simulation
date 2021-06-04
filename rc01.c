@@ -23,8 +23,14 @@
 #include <math.h>
 #include <stdio.h>
 
-int main() {
 
+double sigma(double x) {
+	//return (x > 0) ? x : 0; // ReLU
+	return tanh(x);
+}
+
+
+int main() {
 	// set the seed
 	srand((unsigned)time(NULL));
 
@@ -64,15 +70,17 @@ int main() {
 	dbm_init(&wo, N, 1);
 
 	// initialize wf (fixed point)
+	// no fastforward in this version
 	fpm_init(&wf, N, 1);
-	fpm_fillrand(&wf, 0, float_to_fixed(1));
-	fpm_iadd_scalar(&wf, float_to_fixed(-0.5));
-	fpm_scale(&wf, float_to_fixed(2));
+	//fpm_fillrand(&wf, 0, float_to_fixed(1));
+	//fpm_iadd_scalar(&wf, float_to_fixed(-0.5));
+	//fpm_scale(&wf, float_to_fixed(2));
 	
 	fpm_init(&wi, N, 1);
 	fpm_fillrand(&wi, 0, float_to_fixed(1));
 	fpm_iadd_scalar(&wi, float_to_fixed(-0.5));
 	fpm_scale(&wi, float_to_fixed(2));
+	//fpm_make_sparse(&wi, 0.5);
 
 	printf("\tN: %d\n", N);
 	printf("\tg: %f\n", g);
@@ -115,7 +123,7 @@ int main() {
 	// initialize reservoir nodes nonlinear state vector
 	fpm_init(&r, x.rows, x.cols);
 	for (i = 0; i < r.rows * r.cols; i++)
-		r.data[i] = float_to_fixed(tanh(fixed_to_float(x.data[i])));
+		r.data[i] = float_to_fixed(sigma(fixed_to_float(x.data[i])));
 
 	// Initialize test functions
 	db_matrix ft, ft2;
@@ -123,26 +131,26 @@ int main() {
 	dbm_init(&ft, simtime_len, 1);
 	dbm_init(&ft2, simtime_len, 1);
 
-	//for (i = 0; i < simtime_len; i++) {
-	//	ft.data[i] = ((amp / 1.0) * sin(1.0 * M_PI * freq * simtime[i]) +
-	//		(amp / 2.0) * sin(2.0 * M_PI * freq * simtime[i]) +
-	//		(amp / 6.0) * sin(3.0 * M_PI * freq * simtime[i]) +
-	//		(amp / 3.0) * sin(4.0 * M_PI * freq * simtime[i])) / 1.5;
-	//}
+	for (i = 0; i < simtime_len; i++) {
+		ft.data[i] = ((amp / 1.0) * sin(1.0 * M_PI * freq * simtime[i]) +
+			(amp / 2.0) * sin(2.0 * M_PI * freq * simtime[i]) +
+			(amp / 6.0) * sin(3.0 * M_PI * freq * simtime[i]) +
+			(amp / 3.0) * sin(4.0 * M_PI * freq * simtime[i])) / 1.5;
+	}
 
-	//for (i = 0; i < simtime_len; i++)
-	//	ft2.data[i] = ((amp / 1.0) * sin(1.0 * M_PI * freq * simtime[i]) +
-	//		(amp / 2.0) * sin(2.0 * M_PI * freq * simtime[i]) +
-	//		(amp / 6.0) * sin(3.0 * M_PI * freq * simtime[i]) +
-	//		(amp / 3.0) * sin(4.0 * M_PI * freq * simtime[i])) / 1.5;
+	for (i = 0; i < simtime_len; i++)
+		ft2.data[i] = ((amp / 1.0) * sin(1.0 * M_PI * freq * simtime[i]) +
+			(amp / 2.0) * sin(2.0 * M_PI * freq * simtime[i]) +
+			(amp / 6.0) * sin(3.0 * M_PI * freq * simtime[i]) +
+			(amp / 3.0) * sin(4.0 * M_PI * freq * simtime[i])) / 1.5;
 
 
 	// case ft != ft2
-	double* lorenz = lorenz_attractor(2 * simtime_len, dt * 0.1);
-	for (i = 0; i < simtime_len; i++) {
-		ft.data[i] = 0.1 * lorenz[i];
-		ft2.data[i] = 0.1 * lorenz[simtime_len + i];
-	}
+	//double* lorenz = lorenz_attractor(2 * simtime_len, 0.1*dt);
+	//for (i = 0; i < simtime_len; i++) {
+	//	ft.data[i] = 0.1 * lorenz[i];
+	//	ft2.data[i] = ft.data[i];	//0.1 * lorenz[simtime_len + i];
+	//}
 	//ft.data = lorenz_attractor(simtime_len, dt*0.1);
 	//for (i = 0; i < simtime_len; i++) {
 	//	ft.data[i] *= 0.1; // reduce the amplitude
@@ -198,56 +206,29 @@ int main() {
 		db_matrix tmp, tmp2;
 		fp_matrix tmp_fp, tmp2_fp;
 
-		// % sim, so x(t) and r(t) are created.
-
-		/*** x = (1.0-dt)*x + M*(r*dt) + wf*(z*dt) + wi*(ft(ti)*dt) ***/
 		// scale x by 1-dt
 		//dbm_scale(&x_db, 1.0 - dt);
 		fpm_scale(&x, float_to_fixed(1. - dt));
 
 		// create temporary matrix to hold intermediate values, add to x
-		//tmp = dbm_mult(&M_db, &r_db);
-		//dbm_scale(&tmp, dt);
-		//dbm_iadd(&x_db, &tmp);
-
 		tmp_fp = fpm_mult(&M, &r);
 		fpm_scale(&tmp_fp, float_to_fixed(dt));
 		fpm_iadd(&x, &tmp_fp);
 		
-		//dbm_destroy(&tmp);
-		//tmp = dbm_copy(&wf_db);
-		//dbm_scale(&tmp, z);
-		//dbm_scale(&tmp, dt);
-		//dbm_iadd(&x_db, &tmp);
-
 		fpm_destroy(&tmp_fp);
 		tmp_fp = fpm_copy(&wf);
 		fpm_scale(&tmp_fp, float_to_fixed(z*dt));
 		fpm_iadd(&x, &tmp_fp);
 
-
-		//dbm_destroy(&tmp);
-		//tmp = dbm_copy(&wi_db);
-		//dbm_scale(&tmp, ft.data[t]);
-		//dbm_scale(&tmp, dt);
-		//dbm_iadd(&x_db, &tmp);
 		fpm_destroy(&tmp_fp);
 		tmp_fp = fpm_copy(&wi);
 		fpm_scale(&tmp_fp, float_to_fixed(ft.data[t] * dt));
 		fpm_iadd(&x, &tmp_fp);
 
 		// update r
-		//for (i = 0; i < r_db.cols * r_db.rows; i++)
-		//	r_db.data[i] = tanh(fixed_to_float(float_to_fixed(x_db.data[i]))); // match non-linearity with fp case
 		for (i = 0; i < r.cols * r.rows; i++)
-			r.data[i] = float_to_fixed(tanh(fixed_to_float(x.data[i])));
+			r.data[i] = float_to_fixed(sigma(fixed_to_float(x.data[i])));
 
-		// update z
-		//dbm_destroy(&tmp);
-		//tmp = dbm_transposed(&wo);
-		//dbm_imult(&tmp, &r_db);
-		////dbm_print(&tmp);
-		//z = tmp.data[0];
 
 		z = 0.;
 		for (i = 0; i < N; i++) {
@@ -263,8 +244,7 @@ int main() {
 			// update inverse correlation matrix
 			dbm_destroy(&k);
 			k = dbm_mult(&P, &r_db);
-			//dbm_print(&P);
-			//dbm_destroy(&tmp);
+
 			tmp = dbm_transposed(&r_db);	// tmp = r'
 			dbm_imult(&tmp, &k); // tmp = r'k, should be 1-by-1
 			rPr = tmp.data[0];
@@ -308,6 +288,40 @@ int main() {
 		}
 	}
 
+	// After training, store the resulting network configuration
+	errno_t file_err;
+	FILE* M_file;
+	file_err = fopen_s(&M_file, "M.csv", "w");
+	if (file_err != 0) return file_err;
+	FILE* wi_file;
+	file_err = fopen_s(&wi_file, "wi.csv", "w");
+	if (file_err != 0) return file_err;
+	FILE* wo_file;
+	file_err = fopen_s(&wo_file, "wo.csv", "w");
+	if (file_err != 0) return file_err;
+
+
+	for (int ii = 0; ii < M.rows; ++ii ) {
+		for(int jj = 0; jj < M.cols; ++jj) {
+			if ((M.data[ii*M.cols + jj]) != 0) {
+				fprintf(M_file, "%d, %lld, ", jj+1, M.data[ii*M.cols + jj]);
+			}
+		}
+		fprintf(M_file, "%d, ", 0);
+	}
+
+	for (int ii = 0; ii < wi.rows*wi.cols; ++ii ) {
+		fprintf(wi_file, "%lld, ", wi.data[ii]);
+	}
+
+	for (int ii = 0; ii < wo.rows*wo.cols; ++ii ) {
+		fprintf(wo_file, "%f, ", wo.data[ii]);
+	}
+
+	fclose(M_file);
+	fclose(wi_file);
+	fclose(wo_file);
+
 	printf("\nTesting...\n");
 	progress = 0;
 	z = 0;
@@ -335,7 +349,7 @@ int main() {
 
 		// update r
 		for (i = 0; i < r.cols * r.rows; i++)
-			r.data[i] = float_to_fixed(tanh(fixed_to_float(x.data[i])));
+			r.data[i] = float_to_fixed(sigma(fixed_to_float(x.data[i])));
 
 
 		// output with float weights
@@ -352,6 +366,7 @@ int main() {
 			for (i = 0; i < 100; i++) printf("%c", (i < progress ? 219 : ' '));
 			printf("|");
 		}
+
 	}
 
 	printf("\n");

@@ -5,7 +5,7 @@ REM create file to hold the analysis variables for each simulation
 	echo train_corrcoef,test_corrcoef, train_rmse, test_rmse
 )>script_out.csv
 
-for /l %%x in (50, 50, 1000) do (
+for /l %%x in (1, 1, 10) do (
 	REM Redefine fixed_point parameters
 	(	
 		echo /*******************************************
@@ -16,7 +16,7 @@ for /l %%x in (50, 50, 1000) do (
 		echo.
 		echo #pragma once
 		echo.
-		echo #define FRACTIONAL_BITS 6
+		echo #define FRACTIONAL_BITS 5
 		echo #define INTEGER_BITS 2
 		echo #define SIGN_BIT 1
 	)>fp_params.h
@@ -30,8 +30,8 @@ for /l %%x in (50, 50, 1000) do (
 		echo.
 		echo #pragma once
 		echo.
-		echo #define SIM_N %%x
-		echo #define SIM_p 0.1
+		echo #define SIM_N 500
+		echo #define SIM_p (0.01 * %%x^)
 		echo #define SIM_g 1.5
 		echo #define SIM_alpha 1
 		echo #define SIM_nsecs 500
@@ -42,6 +42,8 @@ for /l %%x in (50, 50, 1000) do (
 	msbuild Simulation.sln -v:q -p:warninglevel=0 -p:Configuration=Release -p:platform=x86 /m
 	cd Release
 	Simulation.exe
+	REM rename output file for plots
+	copy "%~dp0\Release\sim_results.csv" "%~dp0\sim_results%%x.csv"
 	cd ..
 	REM save sim analysis
 	python process_out.py

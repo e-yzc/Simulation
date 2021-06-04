@@ -264,23 +264,25 @@ void fpm_make_sparse(fp_matrix* p, double density) {
 	nb_zeros = floor((1 - density) * p->rows * p->cols);
 	
 	// this will hold the indexes which will be set to zero in the matrix
-	indexes = (unsigned*)malloc(sizeof(unsigned) * nb_zeros);
+	indexes = (unsigned*)malloc(sizeof(unsigned) * p->rows * p->cols);
 
-	for (i = 0; i < nb_zeros; i++) {
+	for (i = 0; i < p->rows*p->cols; i++) {
 		indexes[i] = i;
 	}
 
 	// shuffle indexes to create a random sequence of unique numbers
-	for (i = 0; i < nb_zeros; i++) {
+	for (i = 0; i < p->rows * p->cols; i++) {
 		j = i > 0 ? rand_number16(i) : 0;
 		tmp = indexes[i];
 		indexes[i] = indexes[j];
 		indexes[j] = tmp;
 	}
 
+	for (i = 0; i < nb_zeros; i++)
 
 	for (i = 0; i < nb_zeros; i++) {
-		p->data[indexes[i]] = 0;
+		unsigned index = indexes[i];
+		p->data[index] = 0;
 	}
 
 	free(indexes);

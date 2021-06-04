@@ -180,7 +180,8 @@ double* lorenz_attractor(unsigned n, double t) {
 		y = yt;
 		z = zt;
 
-		result[i] = sqrt(x * x + y * y + z * z);
+		//result[i] = sqrt(x * x + y * y + z * z);
+		result[i] = x;
 	}
 
 	return result;
